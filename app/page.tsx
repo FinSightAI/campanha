@@ -44,7 +44,7 @@ export default function Home() {
       sub: "Grave-se uma vez — e crie vídeos com o seu rosto e a sua voz para qualquer público, apenas com texto.",
     },
     en: {
-      top: "Campaign videos",
+      top: "Campanha videos",
       gold: "in 60 seconds",
       sub: "Record yourself once — then create videos with your face and voice for any audience, just with text.",
     },

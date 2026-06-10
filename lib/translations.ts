@@ -213,8 +213,8 @@ export const translations = {
     nav_create: "Create Video",
     nav_videos: "My Videos",
     nav_powered: "Powered by D-ID AI",
-    land_tagline: "AI · Campaign · Video",
-    land_h1: "Professional Campaign Videos",
+    land_tagline: "AI · Campanha · Video",
+    land_h1: "Professional Campanha Videos",
     land_h2: "No camera. No hours.",
     land_desc: "Record yourself once — then create dozens of different videos for different audiences, just with text.",
     land_step1: "Upload your photo",
@@ -320,11 +320,11 @@ export const translations = {
     // subtitles
     crt_subtitles: "Subtitles",
     // burst nav
-    nav_burst: "Campaign × 5",
+    nav_burst: "Campanha × 5",
     // burst page
-    burst_title: "Campaign Burst",
+    burst_title: "Campanha Burst",
     burst_subtitle: "One topic → 5 videos for different audiences — simultaneously",
-    burst_topic_label: "Campaign topic",
+    burst_topic_label: "Campanha topic",
     burst_topic_ph: "e.g. public transportation, housing, education...",
     burst_area_label: "City / Area",
     burst_area_ph: "e.g. Tel Aviv",
