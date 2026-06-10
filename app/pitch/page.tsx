@@ -138,10 +138,10 @@ export default function PitchPage() {
             Escreva o discurso — vídeo pronto em <strong style={{ color: "#d4af37", fontWeight: 700 }}>60 segundos.</strong>
           </p>
           <div className="ha ha3" style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap", marginBottom: 48 }}>
-            <WAButton size="lg" label="🚀 Ver demo grátis →" />
-            <Link href="/" style={{ background: "transparent", color: "#555", border: "1px solid rgba(255,255,255,.1)", borderRadius: 12, padding: "18px 28px", fontSize: 15, fontWeight: 600, textDecoration: "none", fontFamily: "inherit", letterSpacing: "-.01em", transition: "color .2s" }}>
-              Entrar no app
+            <Link href="/dashboard" style={{ background: "#d4af37", color: "#000", borderRadius: 12, padding: "18px 40px", fontSize: 17, fontWeight: 700, textDecoration: "none", fontFamily: "inherit", letterSpacing: "-.02em", transition: "all .2s", display: "inline-block" }}>
+              Experimentar agora →
             </Link>
+            <WAButton size="lg" label="📲 Falar conosco" />
           </div>
           <p className="ha ha4" style={{ fontSize: 13, color: "#333", fontWeight: 500, letterSpacing: ".02em" }}>
             SEM CARTÃO DE CRÉDITO &nbsp;·&nbsp; RESULTADO EM 30 MIN &nbsp;·&nbsp; {SPOTS_LEFT} VAGAS RESTANTES
@@ -259,7 +259,12 @@ export default function PitchPage() {
               30 minutos de demo com o seu rosto — grátis.<br />
               Se não ficar impressionado, não paga nada.
             </p>
-            <WAButton size="lg" label="📲 Falar no WhatsApp →" />
+            <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
+              <Link href="/dashboard" style={{ background: "#d4af37", color: "#000", borderRadius: 12, padding: "18px 40px", fontSize: 17, fontWeight: 700, textDecoration: "none", fontFamily: "inherit", letterSpacing: "-.02em", display: "inline-block" }}>
+                Experimentar agora →
+              </Link>
+              <WAButton size="lg" label="📲 Falar no WhatsApp" />
+            </div>
             <p style={{ marginTop: 20, fontSize: 13, color: "#2e2e2e", fontWeight: 500 }}>Resposta em até 1 hora &nbsp;·&nbsp; {SPOTS_LEFT} vagas restantes</p>
           </div>
         </section>
@@ -269,10 +274,10 @@ export default function PitchPage() {
           <p style={{ fontSize: 12, color: "#222", fontWeight: 500 }}>Campanha · todos os direitos reservados</p>
         </footer>
 
-        {/* ── FLOATING WA ── */}
-        <a href={WA_LINK} target="_blank" rel="noopener noreferrer" style={{ position: "fixed", bottom: 28, right: 28, zIndex: 100, background: "#25D366", color: "#fff", borderRadius: 999, padding: "15px 24px", fontSize: 14, fontWeight: 700, textDecoration: "none", fontFamily: "inherit", letterSpacing: "-.01em", boxShadow: "0 8px 32px rgba(37,211,102,.45)", display: "flex", alignItems: "center", gap: 8, opacity: scrolled ? 1 : 0, transform: scrolled ? "translateY(0)" : "translateY(16px)", transition: "all .4s cubic-bezier(.22,1,.36,1)", pointerEvents: scrolled ? "auto" : "none" }}>
-          📲 Demo grátis
-        </a>
+        {/* ── FLOATING CTA ── */}
+        <Link href="/dashboard" style={{ position: "fixed", bottom: 28, right: 28, zIndex: 100, background: "#d4af37", color: "#000", borderRadius: 999, padding: "15px 26px", fontSize: 14, fontWeight: 700, textDecoration: "none", fontFamily: "inherit", letterSpacing: "-.02em", boxShadow: "0 8px 32px rgba(212,175,55,.35)", display: "flex", alignItems: "center", gap: 8, opacity: scrolled ? 1 : 0, transform: scrolled ? "translateY(0)" : "translateY(16px)", transition: "all .4s cubic-bezier(.22,1,.36,1)", pointerEvents: scrolled ? "auto" : "none" }}>
+          Experimentar →
+        </Link>
 
       </main>
     </>
