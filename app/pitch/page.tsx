@@ -128,7 +128,7 @@ export default function PitchPage() {
           <h1 className="ha" style={{ fontSize: "clamp(2.8rem,7vw,5rem)", fontWeight: 900, lineHeight: 1.02, letterSpacing: "-.05em", marginBottom: 32, color: "#fff" }}>
             Seu concorrente<br />
             publica <span className="sg">20 vídeos</span><br />
-            por mês.
+            por mês
           </h1>
           <p className="ha ha2" style={{ fontSize: "clamp(1rem,2vw,1.2rem)", color: "#666", maxWidth: 540, margin: "0 auto 52px", lineHeight: 1.8, fontWeight: 400, letterSpacing: "-.01em" }}>
             O Campanha cria um avatar de IA com o seu rosto e a sua voz.
