@@ -110,7 +110,7 @@ export default function CreatePage() {
         body: JSON.stringify({ script: script.trim(), avatarId, voiceId }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "שגיאה ביצירת הוידאו");
+      if (!res.ok) throw new Error(data.error || t("err_unknown"));
       pollStatus(data.id);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : t("err_unknown"));

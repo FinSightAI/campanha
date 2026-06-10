@@ -141,7 +141,7 @@ export default function AvatarPage() {
       setConsentText(data.text);
       setStep("consent_ready");
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : "שגיאה");
+      setError(e instanceof Error ? e.message : t("err_unknown"));
       setStep("error");
     }
   }

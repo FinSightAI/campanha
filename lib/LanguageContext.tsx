@@ -10,13 +10,13 @@ type LangCtx = {
 };
 
 const LanguageContext = createContext<LangCtx>({
-  lang: "he",
+  lang: "pt",
   setLang: () => {},
-  t: (key) => translations.he[key],
+  t: (key) => translations.pt[key],
 });
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
-  const [lang, setLangState] = useState<Lang>("he");
+  const [lang, setLangState] = useState<Lang>("pt");
 
   useEffect(() => {
     const saved = localStorage.getItem("campanha_lang") as Lang | null;
@@ -34,7 +34,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   }
 
   function t(key: TKey): string {
-    return translations[lang][key] ?? translations.he[key];
+    return translations[lang][key] ?? translations.pt[key];
   }
 
   return (

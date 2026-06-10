@@ -7,9 +7,8 @@ import type { Lang } from "@/lib/translations";
 import { useEffect, useState } from "react";
 
 const LANGS: { code: Lang; label: string }[] = [
-  { code: "he", label: "עב" },
-  { code: "en", label: "EN" },
   { code: "pt", label: "PT" },
+  { code: "en", label: "EN" },
 ];
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
