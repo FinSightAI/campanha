@@ -118,7 +118,10 @@ export default function PitchPage() {
         {/* ── NAV ── */}
         <nav style={{ position: "sticky", top: 0, zIndex: 50, background: "rgba(8,8,9,.9)", backdropFilter: "blur(24px)", borderBottom: "1px solid rgba(255,255,255,.05)" }}>
           <div style={{ maxWidth: 1000, margin: "0 auto", padding: "0 32px", height: 64, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <span className="sg" style={{ fontWeight: 900, fontSize: 22, letterSpacing: "-.04em" }}>Campanha</span>
+            <span style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <span className="sg" style={{ fontWeight: 900, fontSize: 22, letterSpacing: "-.04em" }}>Campanha</span>
+              <span style={{ fontSize: 18 }}>🇧🇷</span>
+            </span>
             <WAButton size="sm" label="📲 Fale conosco" />
           </div>
         </nav>
