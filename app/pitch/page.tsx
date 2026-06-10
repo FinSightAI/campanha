@@ -121,7 +121,7 @@ export default function PitchPage() {
         <div style={{ maxWidth: 900, margin: "0 auto", padding: "48px 24px", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: 32, textAlign: "center" }}>
           {[
             { to: 60, suffix: " segundos", label: "do texto ao vídeo pronto" },
-            { to: 5, suffix: " vídeos", label: "em um clique — Campaign Burst" },
+            { to: 5, suffix: " vídeos", label: "em um clique — Campanha Burst" },
             { to: 30, suffix: " horas", label: "economizadas por mês em média" },
             { to: 100, suffix: "%", label: "seu rosto e sua voz — não de outro" },
           ].map(s => (
@@ -226,7 +226,7 @@ export default function PitchPage() {
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 16 }}>
           {[
-            { icon: "⚡", title: "Campaign Burst", hot: true, body: "Escreva um tema — a IA gera 5 discursos para públicos diferentes: jovens, idosos, pais, empresários e geral. Os 5 vídeos são criados simultaneamente." },
+            { icon: "⚡", title: "Campanha Burst", hot: true, body: "Escreva um tema — a IA gera 5 discursos para públicos diferentes: jovens, idosos, pais, empresários e geral. Os 5 vídeos são criados simultaneamente." },
             { icon: "✦", title: "IA escreve o discurso", body: "Escreva \"transporte público, zona sul, público idoso\" — a IA escreve um discurso completo e persuasivo em português, inglês ou espanhol." },
             { icon: "📲", title: "Compartilhamento direto no WhatsApp", body: "Botão de compartilhamento em cada vídeo. Direto do aplicativo para o celular dos eleitores — sem download, sem upload." },
             { icon: "📝", title: "Legendas automáticas", body: "Cada vídeo vem com legendas sincronizadas. Essencial — 70% das visualizações nas redes são sem som." },
@@ -261,7 +261,7 @@ export default function PitchPage() {
               {[
                 "Configuração do seu avatar pessoal (rosto + voz)",
                 "Vídeos ilimitados durante toda a campanha",
-                "Campaign Burst — 5 públicos em um clique",
+                "Campanha Burst — 5 públicos em um clique",
                 "IA que escreve discursos por você",
                 "Legendas automáticas para cada vídeo",
                 "Compartilhamento direto WhatsApp / Telegram",
@@ -299,7 +299,7 @@ export default function PitchPage() {
           { q: "Os vídeos parecem reais?", a: "Sim — nas condições certas. O D-ID V3 Instant Avatar gera movimentos labiais, expressões faciais e movimentos de cabeça naturais. Boa iluminação, fundo limpo e vídeo em 1080p — o resultado parece completamente profissional. Por isso começamos com uma demo para você ver com seus próprios olhos antes de pagar qualquer coisa." },
           { q: "Quanto tempo leva a configuração inicial?", a: "10 minutos de gravação + 5–10 minutos de processamento automático. Depois disso, cada vídeo é criado em 60 segundos. A configuração é feita uma única vez." },
           { q: "Quantos vídeos posso criar?", a: "Ilimitados durante toda a campanha. Sem cobrança por vídeo, sem créditos que acabam." },
-          { q: "O que é o Campaign Burst?", a: "Você escreve um tema — por exemplo «transporte público» — e a IA gera 5 versões diferentes do mesmo discurso: uma para jovens, uma para idosos, uma para pais, uma para empresários e uma geral. Os 5 vídeos são criados simultaneamente." },
+          { q: "O que é o Campanha Burst?", a: "Você escreve um tema — por exemplo «transporte público» — e a IA gera 5 versões diferentes do mesmo discurso: uma para jovens, uma para idosos, uma para pais, uma para empresários e uma geral. Os 5 vídeos são criados simultaneamente." },
           { q: "Meu rosto e voz estão protegidos?", a: "Sim. O D-ID exige um termo de consentimento explícito antes de qualquer treinamento de avatar. Seu rosto e voz não serão usados para nenhuma finalidade sem sua autorização. O avatar pertence somente a você." },
           { q: "O que acontece depois das eleições?", a: "O pacote cobre o período da campanha. Você pode continuar com um novo pacote para a próxima campanha ou encerrar. Sem compromisso contínuo." },
         ].map(faq => <FAQ key={faq.q} {...faq} />)}

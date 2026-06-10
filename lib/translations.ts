@@ -521,7 +521,7 @@ export const translations = {
     // burst nav
     nav_burst: "Campanha × 5",
     // burst page
-    burst_title: "Campaign Burst",
+    burst_title: "Campanha Burst",
     burst_subtitle: "Um tema → 5 vídeos para públicos diferentes — simultaneamente",
     burst_topic_label: "Tema da campanha",
     burst_topic_ph: "ex. transporte público, habitação, educação...",
