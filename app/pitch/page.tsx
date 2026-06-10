@@ -130,11 +130,6 @@ export default function PitchPage() {
         <section style={{ maxWidth: 960, margin: "0 auto", padding: "108px 24px 88px", textAlign: "center", position: "relative" }}>
           <div style={{ position: "absolute", top: "40%", left: "50%", transform: "translate(-50%,-50%)", width: 700, height: 400, background: "radial-gradient(ellipse,rgba(212,175,55,.07) 0%,transparent 70%)", pointerEvents: "none" }} />
 
-          <div className="ha" style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(212,175,55,.07)", border: "1px solid rgba(212,175,55,.25)", borderRadius: 999, padding: "8px 20px", fontSize: 12, color: "#d4af37", marginBottom: 36, fontWeight: 700, letterSpacing: .5 }}>
-            <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#4ade80", display: "inline-block", boxShadow: "0 0 8px #4ade80" }} />
-            D-ID V3 Instant Avatar · Tecnologia de ponta
-          </div>
-
           <h1 className="ha ha2" style={{ fontSize: "clamp(2.4rem,6.5vw,4.2rem)", fontWeight: 900, lineHeight: 1.05, marginBottom: 28, letterSpacing: -1.5 }}>
             Seu concorrente publica<br />
             <span className="sg">20 vídeos por mês.</span><br />
