@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState, useEffect, useRef } from "react";
 
-const WA_NUMBER = "5511999999999"; // seu número WhatsApp (com código do país)
+const WA_NUMBER = "972545803037";
 const WA_MSG = encodeURIComponent("Olá, vi o Campanha e quero saber mais");
 const WA_LINK = `https://wa.me/${WA_NUMBER}?text=${WA_MSG}`;
 const SPOTS_LEFT = 4;
