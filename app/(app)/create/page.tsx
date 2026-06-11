@@ -680,7 +680,7 @@ function CreatePageInner() {
               {copiedWA ? t("crt_wa_copied") : `📋 ${t("crt_wa_copy")}`}
             </button>
             <div className="flex gap-3">
-              <button onClick={() => shareNative(trackUrl || videoUrl)}
+              <button onClick={() => shareNative((trackUrl || videoUrl) as string)}
                 className="flex-1 py-3 rounded-xl text-sm font-bold"
                 style={{ background: "var(--card)", border: "1px solid var(--border)", color: "var(--text)" }}>
                 📤 {t("crt_share_native")}

@@ -62,29 +62,36 @@ function InBrowserRecorder({
     if (!streamRef.current) return;
     chunksRef.current = [];
     const mimeType = MediaRecorder.isTypeSupported("video/webm;codecs=vp9") ? "video/webm;codecs=vp9"
-      : MediaRecorder.isTypeSupported("video/webm") ? "video/webm" : "video/mp4";
-    const recorder = new MediaRecorder(streamRef.current, { mimeType });
-    recorderRef.current = recorder;
-    recorder.ondataavailable = (e) => { if (e.data.size > 0) chunksRef.current.push(e.data); };
-    recorder.onstop = async () => {
-      setPhase("uploading");
-      stopStream();
-      try {
-        const ext = mimeType.includes("mp4") ? "mp4" : "webm";
-        const blob = new Blob(chunksRef.current, { type: mimeType });
-        const file = new File([blob], `consent-${Date.now()}.${ext}`, { type: mimeType });
-        const result = await upload(file.name, file, { access: "public", handleUploadUrl: "/api/upload" });
-        onUploaded(result.url);
-        setPhase("done");
-      } catch (e: unknown) {
-        setError(e instanceof Error ? e.message : "Upload error");
-        setPhase("live");
-      }
-    };
-    recorder.start(200);
-    setSeconds(0);
-    timerRef.current = setInterval(() => setSeconds((s) => s + 1), 1000);
-    setPhase("recording");
+      : MediaRecorder.isTypeSupported("video/webm") ? "video/webm"
+      : MediaRecorder.isTypeSupported("video/mp4;codecs=avc1") ? "video/mp4;codecs=avc1"
+      : "";
+    try {
+      const recorder = new MediaRecorder(streamRef.current, mimeType ? { mimeType } : {});
+      recorderRef.current = recorder;
+      const effectiveMime = mimeType || recorder.mimeType || "video/webm";
+      recorder.ondataavailable = (e) => { if (e.data.size > 0) chunksRef.current.push(e.data); };
+      recorder.onstop = async () => {
+        setPhase("uploading");
+        stopStream();
+        try {
+          const ext = effectiveMime.includes("mp4") ? "mp4" : "webm";
+          const blob = new Blob(chunksRef.current, { type: effectiveMime });
+          const file = new File([blob], `consent-${Date.now()}.${ext}`, { type: effectiveMime });
+          const result = await upload(file.name, file, { access: "public", handleUploadUrl: "/api/upload" });
+          onUploaded(result.url);
+          setPhase("done");
+        } catch (e: unknown) {
+          setError(e instanceof Error ? e.message : "Upload error");
+          setPhase("live");
+        }
+      };
+      recorder.start(200);
+      setSeconds(0);
+      timerRef.current = setInterval(() => setSeconds((s) => s + 1), 1000);
+      setPhase("recording");
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : (lang === "pt" ? "Gravação não suportada neste navegador" : "Recording not supported in this browser"));
+    }
   }
 
   function stopRecording() {

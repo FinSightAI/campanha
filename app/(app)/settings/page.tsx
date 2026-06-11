@@ -70,7 +70,7 @@ export default function SettingsPage() {
         else localStorage.removeItem(k);
       });
       setLoadState("success");
-      setTimeout(() => { setLoadState("idle"); setLoadCode(""); }, 3000);
+      setTimeout(() => window.location.reload(), 1200);
     } catch {
       setLoadState("error");
       setTimeout(() => setLoadState("idle"), 3000);

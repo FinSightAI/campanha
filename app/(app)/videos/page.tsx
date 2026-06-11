@@ -168,7 +168,7 @@ export default function VideosPage() {
                     <button onClick={async () => {
                         const text = waMsg(avatarName, video.url, lang);
                         if (navigator.share) { try { await navigator.share({ text, url: video.url }); return; } catch { /* fallback */ } }
-                        await navigator.clipboard.writeText(video.url);
+                        try { await navigator.clipboard.writeText(video.url); } catch { /* ignore */ }
                       }}
                       className="flex-1 py-2 rounded-lg text-xs font-bold text-center"
                       style={{ background: "var(--gold)", color: "#000" }}>
