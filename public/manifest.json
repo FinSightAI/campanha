@@ -1,0 +1,14 @@
+{
+  "name": "Campanha",
+  "short_name": "Campanha",
+  "description": "Vídeos de campanha profissionais com IA",
+  "start_url": "/dashboard",
+  "display": "standalone",
+  "background_color": "#09090f",
+  "theme_color": "#c9a84c",
+  "orientation": "portrait",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

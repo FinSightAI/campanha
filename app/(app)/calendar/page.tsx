@@ -103,9 +103,56 @@ export default function CalendarPage() {
 
   const todayStr = toDateStr(new Date());
 
+  const [notifState, setNotifState] = useState<"default" | "granted" | "denied">("default");
+
+  useEffect(() => {
+    if (typeof Notification !== "undefined") {
+      setNotifState(Notification.permission as "default" | "granted" | "denied");
+      // Fire notification for today's events if permission already granted
+      if (Notification.permission === "granted") fireTodayNotification(plans);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  function fireTodayNotification(p: CalPlan[]) {
+    const today = toDateStr(new Date());
+    const tomorrow = (() => { const d = new Date(); d.setDate(d.getDate() + 1); return toDateStr(d); })();
+    const todayItems = p.filter((x) => x.date === today && !x.done);
+    const tomorrowItems = p.filter((x) => x.date === tomorrow && !x.done);
+    if (todayItems.length > 0 && navigator.serviceWorker?.controller) {
+      navigator.serviceWorker.controller.postMessage({
+        type: "NOTIFY",
+        title: t("notif_today"),
+        body: todayItems.map((x) => x.title).join(", "),
+      });
+    } else if (tomorrowItems.length > 0 && navigator.serviceWorker?.controller) {
+      navigator.serviceWorker.controller.postMessage({
+        type: "NOTIFY",
+        title: t("notif_tomorrow"),
+        body: tomorrowItems.map((x) => x.title).join(", "),
+      });
+    }
+  }
+
+  async function requestNotifications() {
+    if (typeof Notification === "undefined") return;
+    const perm = await Notification.requestPermission();
+    setNotifState(perm as "default" | "granted" | "denied");
+    if (perm === "granted") fireTodayNotification(plans);
+  }
+
   return (
     <div className="p-8 max-w-5xl">
-      <h1 className="text-2xl font-bold mb-1" style={{ color: "var(--text)" }}>{t("nav_calendar")}</h1>
+      <div className="flex items-start justify-between mb-1 gap-4">
+        <h1 className="text-2xl font-bold" style={{ color: "var(--text)" }}>{t("nav_calendar")}</h1>
+        {notifState !== "denied" && (
+          <button onClick={notifState === "granted" ? undefined : requestNotifications}
+            className="flex-shrink-0 text-xs font-bold px-3 py-2 rounded-lg"
+            style={{ background: notifState === "granted" ? "rgba(212,175,55,.15)" : "var(--card)", border: `1px solid ${notifState === "granted" ? "var(--gold)" : "var(--border)"}`, color: notifState === "granted" ? "var(--gold)" : "var(--muted)", cursor: notifState === "granted" ? "default" : "pointer" }}>
+            🔔 {notifState === "granted" ? t("notif_enabled") : t("notif_enable")}
+          </button>
+        )}
+      </div>
       <p className="text-sm mb-6" style={{ color: "var(--muted)" }}>
         {lang === "pt" ? "Planeje seus vídeos da semana" : lang === "en" ? "Plan your weekly videos" : "תכנן את הסרטונים השבועיים"}
       </p>

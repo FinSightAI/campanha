@@ -111,6 +111,9 @@ function CreatePageInner() {
   const [showDraftBanner, setShowDraftBanner] = useState(false);
 
   // Subtitles
+  const [subtitlesOn, setSubtitlesOn] = useState(true);
+
+  // Subtitles
   const [vttUrl, setVttUrl] = useState<string | null>(null);
   const prevVttUrl = useRef<string | null>(null);
 
@@ -626,10 +629,17 @@ function CreatePageInner() {
             <p className="text-sm" style={{ color: "var(--muted)" }}>{t("crt_done_sub")}</p>
           </div>
 
-          <div className="rounded-xl overflow-hidden mb-4" style={{ border: "1px solid var(--border)" }}>
+          <div className="rounded-xl overflow-hidden mb-2" style={{ border: "1px solid var(--border)" }}>
             <video src={videoUrl} controls className="w-full">
-              {vttUrl && <track kind="subtitles" src={vttUrl} default label={t("crt_subtitles")} />}
+              {vttUrl && subtitlesOn && <track kind="subtitles" src={vttUrl} default label={t("crt_subtitles")} />}
             </video>
+          </div>
+          <div className="flex justify-end mb-4">
+            <button onClick={() => setSubtitlesOn(v => !v)}
+              className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg font-medium transition-all"
+              style={{ background: subtitlesOn ? "rgba(212,175,55,.15)" : "var(--card)", border: `1px solid ${subtitlesOn ? "var(--gold)" : "var(--border)"}`, color: subtitlesOn ? "var(--gold)" : "var(--muted)" }}>
+              CC {subtitlesOn ? "✓" : "✕"} {t("crt_sub_toggle")}
+            </button>
           </div>
 
           {/* Tracking link */}
