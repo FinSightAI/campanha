@@ -23,6 +23,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     { href: "/create", label: t("nav_create"), icon: "+" },
     { href: "/videos", label: t("nav_videos"), icon: "▶" },
     { href: "/burst", label: t("nav_burst"), icon: "⚡" },
+    { href: "/calendar", label: t("nav_calendar"), icon: "📅" },
     { href: "/guide", label: t("nav_guide"), icon: "?" },
     { href: "/settings", label: t("nav_settings"), icon: "⚙" },
   ];
