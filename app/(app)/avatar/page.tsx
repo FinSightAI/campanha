@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { upload } from "@vercel/blob/client";
 import { useLanguage } from "@/lib/LanguageContext";
 import { getDIDHeaders } from "@/lib/didKey";
@@ -16,24 +16,168 @@ type Step =
   | "done"
   | "error";
 
-function VideoUploadField({
-  value,
-  onChange,
-  placeholder,
+// ─── In-browser recorder ───────────────────────────────────────────────────────
+
+function InBrowserRecorder({
+  promptText,
+  onUploaded,
   disabled,
-  uploadLabel,
-  uploadingLabel,
-  uploadDoneLabel,
-  orLabel,
+  lang,
 }: {
-  value: string;
-  onChange: (url: string) => void;
-  placeholder: string;
+  promptText: string;
+  onUploaded: (url: string) => void;
   disabled: boolean;
-  uploadLabel: string;
-  uploadingLabel: string;
-  uploadDoneLabel: string;
-  orLabel: string;
+  lang: string;
+}) {
+  const [phase, setPhase] = useState<"idle" | "live" | "recording" | "uploading" | "done">("idle");
+  const [seconds, setSeconds] = useState(0);
+  const [error, setError] = useState("");
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const recorderRef = useRef<MediaRecorder | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+  const chunksRef = useRef<Blob[]>([]);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const stopStream = useCallback(() => {
+    streamRef.current?.getTracks().forEach((t) => t.stop());
+    streamRef.current = null;
+    if (timerRef.current) clearInterval(timerRef.current);
+  }, []);
+
+  useEffect(() => () => stopStream(), [stopStream]);
+
+  async function openCamera() {
+    setError("");
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+      streamRef.current = stream;
+      if (videoRef.current) { videoRef.current.srcObject = stream; videoRef.current.play(); }
+      setPhase("live");
+    } catch {
+      setError(lang === "pt" ? "Câmera não disponível. Verifique as permissões." : "Camera unavailable. Check permissions.");
+    }
+  }
+
+  function startRecording() {
+    if (!streamRef.current) return;
+    chunksRef.current = [];
+    const mimeType = MediaRecorder.isTypeSupported("video/webm;codecs=vp9") ? "video/webm;codecs=vp9"
+      : MediaRecorder.isTypeSupported("video/webm") ? "video/webm" : "video/mp4";
+    const recorder = new MediaRecorder(streamRef.current, { mimeType });
+    recorderRef.current = recorder;
+    recorder.ondataavailable = (e) => { if (e.data.size > 0) chunksRef.current.push(e.data); };
+    recorder.onstop = async () => {
+      setPhase("uploading");
+      stopStream();
+      try {
+        const ext = mimeType.includes("mp4") ? "mp4" : "webm";
+        const blob = new Blob(chunksRef.current, { type: mimeType });
+        const file = new File([blob], `consent-${Date.now()}.${ext}`, { type: mimeType });
+        const result = await upload(file.name, file, { access: "public", handleUploadUrl: "/api/upload" });
+        onUploaded(result.url);
+        setPhase("done");
+      } catch (e: unknown) {
+        setError(e instanceof Error ? e.message : "Upload error");
+        setPhase("live");
+      }
+    };
+    recorder.start(200);
+    setSeconds(0);
+    timerRef.current = setInterval(() => setSeconds((s) => s + 1), 1000);
+    setPhase("recording");
+  }
+
+  function stopRecording() {
+    if (timerRef.current) clearInterval(timerRef.current);
+    recorderRef.current?.stop();
+  }
+
+  const fmt = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+
+  if (phase === "done") {
+    return (
+      <div className="rounded-xl p-4 text-center" style={{ background: "var(--card)", border: "1px solid var(--gold)" }}>
+        <p className="text-2xl mb-1">✅</p>
+        <p className="text-sm font-bold" style={{ color: "var(--gold)" }}>
+          {lang === "pt" ? "Vídeo gravado e enviado!" : "Video recorded and uploaded!"}
+        </p>
+      </div>
+    );
+  }
+
+  if (phase === "uploading") {
+    return (
+      <div className="rounded-xl p-4 text-center" style={{ background: "var(--card)", border: "1px solid var(--border)" }}>
+        <p className="text-sm animate-pulse" style={{ color: "var(--gold)" }}>
+          {lang === "pt" ? "Enviando vídeo..." : "Uploading video..."}
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="rounded-xl overflow-hidden" style={{ border: "1px solid var(--border)" }}>
+      {/* Camera preview */}
+      {(phase === "live" || phase === "recording") && (
+        <div className="relative">
+          <video ref={videoRef} muted playsInline className="w-full" style={{ maxHeight: 220, objectFit: "cover", background: "#000", display: "block" }} />
+          {phase === "recording" && (
+            <div className="absolute top-3 left-3 flex items-center gap-1.5 px-2.5 py-1 rounded-full"
+              style={{ background: "rgba(0,0,0,.7)" }}>
+              <span className="w-2 h-2 rounded-full animate-pulse" style={{ background: "#e55" }} />
+              <span className="text-xs font-bold text-white">{fmt(seconds)}</span>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Teleprompter text */}
+      {(phase === "live" || phase === "recording") && promptText && (
+        <div className="px-4 py-3" style={{ background: "var(--bg)", borderTop: "1px solid var(--border)" }}>
+          <p className="text-xs font-semibold mb-1.5" style={{ color: "var(--gold)" }}>
+            {lang === "pt" ? "Leia em voz alta:" : "Read aloud:"}
+          </p>
+          <p className="text-sm leading-relaxed" style={{ color: "var(--text)" }}>{promptText}</p>
+        </div>
+      )}
+
+      {/* Buttons */}
+      <div className="p-3" style={{ background: "var(--card)" }}>
+        {error && <p className="text-xs mb-2" style={{ color: "#e55" }}>{error}</p>}
+
+        {phase === "idle" && (
+          <button onClick={openCamera} disabled={disabled}
+            className="w-full py-3 rounded-xl text-sm font-bold disabled:opacity-40"
+            style={{ background: "var(--gold)", color: "#000" }}>
+            📹 {lang === "pt" ? "Gravar com câmera" : "Record with camera"}
+          </button>
+        )}
+        {phase === "live" && (
+          <button onClick={startRecording}
+            className="w-full py-3 rounded-xl text-sm font-bold"
+            style={{ background: "#e55", color: "#fff" }}>
+            ● {lang === "pt" ? "Iniciar gravação" : "Start recording"}
+          </button>
+        )}
+        {phase === "recording" && (
+          <button onClick={stopRecording}
+            className="w-full py-3 rounded-xl text-sm font-bold"
+            style={{ background: "var(--card)", border: "1px solid var(--border)", color: "var(--text)" }}>
+            ⏹ {lang === "pt" ? "Parar e enviar" : "Stop and send"}
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── File upload field (fallback) ─────────────────────────────────────────────
+
+function VideoUploadField({
+  value, onChange, placeholder, disabled, uploadLabel, uploadingLabel, uploadDoneLabel, orLabel,
+}: {
+  value: string; onChange: (url: string) => void; placeholder: string; disabled: boolean;
+  uploadLabel: string; uploadingLabel: string; uploadDoneLabel: string; orLabel: string;
 }) {
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState("");
@@ -43,10 +187,7 @@ function VideoUploadField({
     setUploading(true);
     setUploadError("");
     try {
-      const blob = await upload(file.name, file, {
-        access: "public",
-        handleUploadUrl: "/api/upload",
-      });
+      const blob = await upload(file.name, file, { access: "public", handleUploadUrl: "/api/upload" });
       onChange(blob.url);
     } catch (e: unknown) {
       setUploadError(e instanceof Error ? e.message : "Upload error");
@@ -58,47 +199,24 @@ function VideoUploadField({
   const uploaded = value.includes("vercel-storage.com") || value.includes("blob.vercel");
 
   return (
-    <div className="mb-4">
-      {/* File picker button */}
-      <button
-        type="button"
-        onClick={() => fileRef.current?.click()}
-        disabled={disabled || uploading}
+    <div>
+      <button type="button" onClick={() => fileRef.current?.click()} disabled={disabled || uploading}
         className="w-full py-2.5 rounded-lg text-sm font-medium mb-2 transition-opacity hover:opacity-80 disabled:opacity-40"
-        style={{
-          background: uploaded ? "var(--card)" : "var(--bg)",
-          border: `2px dashed ${uploaded ? "var(--gold)" : "var(--border)"}`,
-          color: uploading ? "var(--gold)" : uploaded ? "var(--gold)" : "var(--muted)",
-        }}
-      >
+        style={{ background: uploaded ? "var(--card)" : "var(--bg)", border: `2px dashed ${uploaded ? "var(--gold)" : "var(--border)"}`, color: uploading ? "var(--gold)" : uploaded ? "var(--gold)" : "var(--muted)" }}>
         {uploading ? uploadingLabel : uploaded ? uploadDoneLabel : uploadLabel}
       </button>
-      <input
-        ref={fileRef}
-        type="file"
-        accept="video/*"
-        className="hidden"
-        onChange={(e) => {
-          const f = e.target.files?.[0];
-          if (f) handleFile(f);
-        }}
-      />
+      <input ref={fileRef} type="file" accept="video/*" className="hidden"
+        onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); }} />
       {uploadError && <p className="text-xs mb-2" style={{ color: "#e55" }}>{uploadError}</p>}
-
-      {/* URL fallback */}
       <p className="text-xs mb-1.5" style={{ color: "var(--muted)" }}>{orLabel}</p>
-      <input
-        type="url"
-        placeholder={placeholder}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        disabled={disabled}
-        className="w-full px-4 py-3 rounded-lg text-sm outline-none"
-        style={{ background: "var(--card)", border: "1px solid var(--border)", color: "var(--text)" }}
-      />
+      <input type="url" placeholder={placeholder} value={value} onChange={(e) => onChange(e.target.value)}
+        disabled={disabled} className="w-full px-4 py-3 rounded-lg text-sm outline-none"
+        style={{ background: "var(--card)", border: "1px solid var(--border)", color: "var(--text)" }} />
     </div>
   );
 }
+
+// ─── Main page ─────────────────────────────────────────────────────────────────
 
 export default function AvatarPage() {
   const { t, lang } = useLanguage();
@@ -112,17 +230,14 @@ export default function AvatarPage() {
   const [voiceId, setVoiceId] = useState("");
   const [thumbnailUrl, setThumbnailUrl] = useState("");
   const [error, setError] = useState("");
+  // Toggle between in-browser recorder and URL upload
+  const [useRecorder, setUseRecorder] = useState(true);
 
   useEffect(() => {
     const id = localStorage.getItem("campanha_avatar_id");
     const name = localStorage.getItem("campanha_avatar_name");
     const thumb = localStorage.getItem("campanha_avatar_thumbnail");
-    if (id) {
-      setAvatarId(id);
-      setAvatarName(name || "");
-      setThumbnailUrl(thumb || "");
-      setStep("done");
-    }
+    if (id) { setAvatarId(id); setAvatarName(name || ""); setThumbnailUrl(thumb || ""); setStep("done"); }
   }, []);
 
   async function startConsent() {
@@ -138,7 +253,9 @@ export default function AvatarPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
       setConsentId(data.id);
-      setConsentText(data.text);
+      // Pre-fill the person's name in the consent text
+      const text: string = data.text ?? "";
+      setConsentText(text.replace(/\[user name\]/gi, avatarName).replace(/\[nome do usuário\]/gi, avatarName));
       setStep("consent_ready");
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : t("err_unknown"));
@@ -171,23 +288,12 @@ export default function AvatarPage() {
     let attempts = 0;
     const interval = setInterval(async () => {
       attempts++;
-      if (attempts > MAX) {
-        clearInterval(interval);
-        setError(t("err_consent_timeout"));
-        setStep("error");
-        return;
-      }
+      if (attempts > MAX) { clearInterval(interval); setError(t("err_consent_timeout")); setStep("error"); return; }
       try {
         const res = await fetch(`/api/consent-status/${id}`, { headers: getDIDHeaders() });
         const data = await res.json();
-        if (data.status === "done") {
-          clearInterval(interval);
-          setStep("training_ready");
-        } else if (data.status === "error") {
-          clearInterval(interval);
-          setError(t("err_consent_fail"));
-          setStep("error");
-        }
+        if (data.status === "done") { clearInterval(interval); setStep("training_ready"); }
+        else if (data.status === "error") { clearInterval(interval); setError(t("err_consent_fail")); setStep("error"); }
       } catch { /* keep polling */ }
     }, 5000);
   }
@@ -216,12 +322,7 @@ export default function AvatarPage() {
     let attempts = 0;
     const interval = setInterval(async () => {
       attempts++;
-      if (attempts > MAX) {
-        clearInterval(interval);
-        setError(t("err_training_timeout"));
-        setStep("error");
-        return;
-      }
+      if (attempts > MAX) { clearInterval(interval); setError(t("err_training_timeout")); setStep("error"); return; }
       try {
         const res = await fetch(`/api/avatar-status/${id}`, { headers: getDIDHeaders() });
         const data = await res.json();
@@ -249,16 +350,8 @@ export default function AvatarPage() {
     localStorage.removeItem("campanha_avatar_name");
     localStorage.removeItem("campanha_avatar_voice_id");
     localStorage.removeItem("campanha_avatar_thumbnail");
-    setStep("idle");
-    setAvatarName("");
-    setConsentId("");
-    setConsentText("");
-    setConsentVideoUrl("");
-    setTrainingVideoUrl("");
-    setAvatarId("");
-    setVoiceId("");
-    setThumbnailUrl("");
-    setError("");
+    setStep("idle"); setAvatarName(""); setConsentId(""); setConsentText("");
+    setConsentVideoUrl(""); setTrainingVideoUrl(""); setAvatarId(""); setVoiceId(""); setThumbnailUrl(""); setError("");
   }
 
   const stepNumber = {
@@ -272,7 +365,7 @@ export default function AvatarPage() {
       <h1 className="text-2xl font-bold mb-1" style={{ color: "var(--text)" }}>{t("avt_title")}</h1>
       <p className="text-sm mb-6" style={{ color: "var(--muted)" }}>{t("avt_subtitle")}</p>
 
-      {/* What you'll need — only shown before starting */}
+      {/* What you'll need */}
       {step === "idle" && (
         <div className="rounded-xl p-5 mb-6" style={{ background: "linear-gradient(135deg,rgba(212,175,55,.1),rgba(212,175,55,.03))", border: "1px solid rgba(212,175,55,.3)" }}>
           <p className="text-sm font-bold mb-3" style={{ color: "var(--gold)" }}>{t("avt_need_title")}</p>
@@ -281,17 +374,14 @@ export default function AvatarPage() {
               ["📹", lang === "pt" ? "Câmera ou smartphone" : lang === "en" ? "Camera or smartphone" : "מצלמה או סמארטפון"],
               ["☀️", lang === "pt" ? "Boa iluminação" : lang === "en" ? "Good lighting" : "תאורה טובה"],
               ["🎤", lang === "pt" ? "Ambiente silencioso" : lang === "en" ? "Quiet environment" : "סביבה שקטה"],
-              ["📁", "Google Drive / Dropbox"],
+              ["⏱", lang === "pt" ? "~10 minutos" : lang === "en" ? "~10 minutes" : "~10 דקות"],
             ].map(([icon, label]) => (
               <div key={label} className="flex items-center gap-2 text-xs rounded-lg px-3 py-2" style={{ background: "var(--card)", color: "var(--muted)" }}>
-                <span>{icon}</span>
-                <span>{label}</span>
+                <span>{icon}</span><span>{label}</span>
               </div>
             ))}
           </div>
-          <div className="flex items-center gap-1.5 text-xs" style={{ color: "var(--muted)" }}>
-            <span>{t("avt_need_time")}</span>
-          </div>
+          <p className="text-xs" style={{ color: "var(--muted)" }}>{t("avt_need_time")}</p>
         </div>
       )}
 
@@ -305,18 +395,11 @@ export default function AvatarPage() {
             return (
               <div key={label} className="flex items-center gap-2">
                 <div className="flex items-center gap-1.5">
-                  <span
-                    className="w-6 h-6 rounded-full text-xs flex items-center justify-center font-bold"
-                    style={{
-                      background: done ? "var(--gold)" : active ? "var(--gold)" : "var(--border)",
-                      color: done || active ? "#000" : "var(--muted)",
-                    }}
-                  >
+                  <span className="w-6 h-6 rounded-full text-xs flex items-center justify-center font-bold"
+                    style={{ background: done || active ? "var(--gold)" : "var(--border)", color: done || active ? "#000" : "var(--muted)" }}>
                     {done ? "✓" : n}
                   </span>
-                  <span className="text-xs" style={{ color: active ? "var(--text)" : "var(--muted)" }}>
-                    {label}
-                  </span>
+                  <span className="text-xs" style={{ color: active ? "var(--text)" : "var(--muted)" }}>{label}</span>
                 </div>
                 {i < 2 && <span style={{ color: "var(--border)" }}>—</span>}
               </div>
@@ -328,15 +411,11 @@ export default function AvatarPage() {
       {/* DONE */}
       {step === "done" && (
         <div className="rounded-xl p-6 text-center mb-6" style={{ background: "var(--card)", border: "1px solid var(--gold)" }}>
-          {thumbnailUrl && (
-            <img src={thumbnailUrl} alt="avatar" className="w-24 h-24 rounded-full object-cover mx-auto mb-3" />
-          )}
+          {thumbnailUrl && <img src={thumbnailUrl} alt="avatar" className="w-24 h-24 rounded-full object-cover mx-auto mb-3" />}
           {!thumbnailUrl && <p className="text-4xl mb-3">✓</p>}
           <p className="font-bold text-base mb-1" style={{ color: "var(--gold)" }}>{t("avt_ready_title")}</p>
           <p className="text-sm mb-4" style={{ color: "var(--text)" }}>{avatarName || localStorage.getItem("campanha_avatar_name")}</p>
-          <button onClick={reset} className="text-xs underline" style={{ color: "var(--muted)" }}>
-            {t("avt_replace")}
-          </button>
+          <button onClick={reset} className="text-xs underline" style={{ color: "var(--muted)" }}>{t("avt_replace")}</button>
         </div>
       )}
 
@@ -344,21 +423,13 @@ export default function AvatarPage() {
       {(step === "idle" || step === "consent_loading") && (
         <div>
           <label className="text-xs block mb-1.5" style={{ color: "var(--muted)" }}>{t("avt_name_label")}</label>
-          <input
-            type="text"
-            placeholder={t("avt_name_placeholder")}
-            value={avatarName}
-            onChange={(e) => setAvatarName(e.target.value)}
-            disabled={step === "consent_loading"}
+          <input type="text" placeholder={t("avt_name_placeholder")} value={avatarName}
+            onChange={(e) => setAvatarName(e.target.value)} disabled={step === "consent_loading"}
             className="w-full px-4 py-3 rounded-lg text-sm outline-none mb-4"
-            style={{ background: "var(--card)", border: "1px solid var(--border)", color: "var(--text)" }}
-          />
-          <button
-            onClick={startConsent}
-            disabled={!avatarName.trim() || step === "consent_loading"}
+            style={{ background: "var(--card)", border: "1px solid var(--border)", color: "var(--text)" }} />
+          <button onClick={startConsent} disabled={!avatarName.trim() || step === "consent_loading"}
             className="w-full py-3 rounded-xl font-bold text-sm disabled:opacity-40"
-            style={{ background: "var(--gold)", color: "#000" }}
-          >
+            style={{ background: "var(--gold)", color: "#000" }}>
             {step === "consent_loading" ? t("avt_loading") : t("avt_continue")}
           </button>
         </div>
@@ -367,30 +438,57 @@ export default function AvatarPage() {
       {/* STEP 2 — Consent */}
       {(step === "consent_ready" || step === "consent_submitting" || step === "consent_verifying") && (
         <div>
-          <div className="rounded-xl p-4 mb-5" style={{ background: "var(--card)", border: "1px solid var(--border)" }}>
-            <p className="text-xs font-semibold mb-2" style={{ color: "var(--gold)" }}>{t("avt_consent_read")}</p>
-            <p className="text-sm leading-relaxed" style={{ color: "var(--text)" }}>{consentText}</p>
-          </div>
-          <VideoUploadField
-            value={consentVideoUrl}
-            onChange={setConsentVideoUrl}
-            placeholder={t("avt_consent_placeholder")}
-            disabled={step !== "consent_ready"}
-            uploadLabel={t("avt_upload_btn")}
-            uploadingLabel={t("avt_uploading")}
-            uploadDoneLabel={t("avt_upload_done")}
-            orLabel={t("avt_upload_or")}
-          />
-          {step === "consent_ready" && (
-            <button
-              onClick={submitConsent}
-              disabled={!consentVideoUrl.trim()}
-              className="w-full py-3 rounded-xl font-bold text-sm disabled:opacity-40"
-              style={{ background: "var(--gold)", color: "#000" }}
-            >
-              {t("avt_consent_submit")}
+          {/* Recorder / Upload toggle */}
+          <div className="flex gap-2 mb-4">
+            <button onClick={() => setUseRecorder(true)}
+              className="flex-1 py-2 rounded-lg text-xs font-bold transition-all"
+              style={{ background: useRecorder ? "var(--gold)" : "var(--card)", color: useRecorder ? "#000" : "var(--muted)", border: `1px solid ${useRecorder ? "var(--gold)" : "var(--border)"}` }}>
+              📹 {lang === "pt" ? "Gravar agora" : "Record now"}
             </button>
+            <button onClick={() => setUseRecorder(false)}
+              className="flex-1 py-2 rounded-lg text-xs font-bold transition-all"
+              style={{ background: !useRecorder ? "var(--gold)" : "var(--card)", color: !useRecorder ? "#000" : "var(--muted)", border: `1px solid ${!useRecorder ? "var(--gold)" : "var(--border)"}` }}>
+              🔗 {lang === "pt" ? "Colar URL" : "Paste URL"}
+            </button>
+          </div>
+
+          {useRecorder ? (
+            <div className="mb-5">
+              <InBrowserRecorder
+                promptText={consentText}
+                onUploaded={(url) => { setConsentVideoUrl(url); }}
+                disabled={step !== "consent_ready"}
+                lang={lang}
+              />
+              {consentVideoUrl && step === "consent_ready" && (
+                <button onClick={submitConsent}
+                  className="w-full mt-3 py-3 rounded-xl font-bold text-sm"
+                  style={{ background: "var(--gold)", color: "#000" }}>
+                  {t("avt_consent_submit")}
+                </button>
+              )}
+            </div>
+          ) : (
+            <div>
+              {/* Consent text display */}
+              <div className="rounded-xl p-4 mb-5" style={{ background: "var(--card)", border: "1px solid var(--border)" }}>
+                <p className="text-xs font-semibold mb-2" style={{ color: "var(--gold)" }}>{t("avt_consent_read")}</p>
+                <p className="text-sm leading-relaxed" style={{ color: "var(--text)" }}>{consentText}</p>
+              </div>
+              <VideoUploadField value={consentVideoUrl} onChange={setConsentVideoUrl}
+                placeholder={t("avt_consent_placeholder")} disabled={step !== "consent_ready"}
+                uploadLabel={t("avt_upload_btn")} uploadingLabel={t("avt_uploading")}
+                uploadDoneLabel={t("avt_upload_done")} orLabel={t("avt_upload_or")} />
+              {step === "consent_ready" && (
+                <button onClick={submitConsent} disabled={!consentVideoUrl.trim()}
+                  className="w-full mt-3 py-3 rounded-xl font-bold text-sm disabled:opacity-40"
+                  style={{ background: "var(--gold)", color: "#000" }}>
+                  {t("avt_consent_submit")}
+                </button>
+              )}
+            </div>
           )}
+
           {(step === "consent_submitting" || step === "consent_verifying") && (
             <div className="w-full py-4 rounded-xl text-center text-sm" style={{ background: "var(--card)", border: "1px solid var(--border)" }}>
               <span className="animate-pulse" style={{ color: "var(--gold)" }}>{t("avt_consent_verifying")}</span>
@@ -404,26 +502,55 @@ export default function AvatarPage() {
       {(step === "training_ready" || step === "training") && (
         <div>
           <p className="text-xs mb-3" style={{ color: "var(--muted)" }}>{t("avt_training_hint")}</p>
-          <VideoUploadField
-            value={trainingVideoUrl}
-            onChange={setTrainingVideoUrl}
-            placeholder={t("avt_consent_placeholder")}
-            disabled={step === "training"}
-            uploadLabel={t("avt_upload_btn")}
-            uploadingLabel={t("avt_uploading")}
-            uploadDoneLabel={t("avt_upload_done")}
-            orLabel={t("avt_upload_or")}
-          />
-          {step === "training_ready" && (
-            <button
-              onClick={createAvatar}
-              disabled={!trainingVideoUrl.trim()}
-              className="w-full py-3 rounded-xl font-bold text-sm disabled:opacity-40"
-              style={{ background: "var(--gold)", color: "#000" }}
-            >
-              {t("avt_training_start")}
+
+          {/* Recorder / Upload toggle */}
+          <div className="flex gap-2 mb-4">
+            <button onClick={() => setUseRecorder(true)}
+              className="flex-1 py-2 rounded-lg text-xs font-bold transition-all"
+              style={{ background: useRecorder ? "var(--gold)" : "var(--card)", color: useRecorder ? "#000" : "var(--muted)", border: `1px solid ${useRecorder ? "var(--gold)" : "var(--border)"}` }}>
+              📹 {lang === "pt" ? "Gravar agora" : "Record now"}
             </button>
+            <button onClick={() => setUseRecorder(false)}
+              className="flex-1 py-2 rounded-lg text-xs font-bold transition-all"
+              style={{ background: !useRecorder ? "var(--gold)" : "var(--card)", color: !useRecorder ? "#000" : "var(--muted)", border: `1px solid ${!useRecorder ? "var(--gold)" : "var(--border)"}` }}>
+              🔗 {lang === "pt" ? "Colar URL" : "Paste URL"}
+            </button>
+          </div>
+
+          {useRecorder ? (
+            <div className="mb-4">
+              <InBrowserRecorder
+                promptText={lang === "pt"
+                  ? "Fale naturalmente por pelo menos 1 minuto — sobre qualquer assunto, como se estivesse conversando com eleitores."
+                  : "Speak naturally for at least 1 minute — about anything, as if talking to voters."}
+                onUploaded={(url) => setTrainingVideoUrl(url)}
+                disabled={step === "training"}
+                lang={lang}
+              />
+              {trainingVideoUrl && step === "training_ready" && (
+                <button onClick={createAvatar}
+                  className="w-full mt-3 py-3 rounded-xl font-bold text-sm"
+                  style={{ background: "var(--gold)", color: "#000" }}>
+                  {t("avt_training_start")}
+                </button>
+              )}
+            </div>
+          ) : (
+            <div>
+              <VideoUploadField value={trainingVideoUrl} onChange={setTrainingVideoUrl}
+                placeholder={t("avt_consent_placeholder")} disabled={step === "training"}
+                uploadLabel={t("avt_upload_btn")} uploadingLabel={t("avt_uploading")}
+                uploadDoneLabel={t("avt_upload_done")} orLabel={t("avt_upload_or")} />
+              {step === "training_ready" && (
+                <button onClick={createAvatar} disabled={!trainingVideoUrl.trim()}
+                  className="w-full mt-3 py-3 rounded-xl font-bold text-sm disabled:opacity-40"
+                  style={{ background: "var(--gold)", color: "#000" }}>
+                  {t("avt_training_start")}
+                </button>
+              )}
+            </div>
           )}
+
           {step === "training" && (
             <div className="w-full py-4 rounded-xl text-center text-sm" style={{ background: "var(--card)", border: "1px solid var(--border)" }}>
               <span className="animate-pulse" style={{ color: "var(--gold)" }}>{t("avt_training_progress")}</span>
