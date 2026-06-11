@@ -37,7 +37,7 @@ const CSS = `
 export default function Home() {
   const { t, lang, setLang } = useLanguage();
 
-  const headlines: Record<Lang, { top: string; gold: string; sub: string }> = {
+  const headlines: Record<string, { top: string; gold: string; sub: string }> = {
     pt: {
       top: "Vídeos de campanha",
       gold: "em 60 segundos",
@@ -48,17 +48,11 @@ export default function Home() {
       gold: "in 60 seconds",
       sub: "Record yourself once — then create videos with your face and voice for any audience, just with text.",
     },
-    he: {
-      top: "סרטוני קמפיין",
-      gold: "תוך 60 שניות",
-      sub: "מקליט פעם אחת — יוצר סרטונים עם הפנים והקול שלך לכל קהל, רק עם טקסט.",
-    },
   };
 
-  const cta: Record<Lang, string> = {
+  const cta: Record<string, string> = {
     pt: "Entrar no app →",
     en: "Open app →",
-    he: "כניסה לאפליקציה →",
   };
 
   const h = headlines[lang] ?? headlines.pt;

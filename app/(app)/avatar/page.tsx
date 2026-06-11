@@ -101,7 +101,7 @@ function VideoUploadField({
 }
 
 export default function AvatarPage() {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const [step, setStep] = useState<Step>("idle");
   const [avatarName, setAvatarName] = useState("");
   const [consentId, setConsentId] = useState("");
@@ -133,7 +133,7 @@ export default function AvatarPage() {
       const res = await fetch("/api/create-consent", {
         method: "POST",
         headers: { "Content-Type": "application/json", ...getDIDHeaders() },
-        body: JSON.stringify({ language: "hebrew" }),
+        body: JSON.stringify({ language: lang === "en" ? "english" : "portuguese" }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);

@@ -327,7 +327,7 @@ export const translations = {
     burst_topic_label: "Campanha topic",
     burst_topic_ph: "e.g. public transportation, housing, education...",
     burst_area_label: "City / Area",
-    burst_area_ph: "e.g. Tel Aviv",
+    burst_area_ph: "e.g. São Paulo",
     burst_write: "Write 5 speeches",
     burst_writing: "● Writing speeches...",
     burst_create_all: "⚡ Create 5 videos",

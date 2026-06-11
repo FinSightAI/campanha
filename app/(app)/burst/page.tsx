@@ -54,7 +54,7 @@ export default function BurstPage() {
         vidStatus: "idle",
       })));
     } catch (e: unknown) {
-      setWriteError(e instanceof Error ? e.message : "Error");
+      setWriteError(e instanceof Error ? e.message : t("err_unknown"));
     } finally {
       setWriting(false);
     }
@@ -77,7 +77,7 @@ export default function BurstPage() {
         if (!res.ok) throw new Error(data.error);
         pollOne(i, data.id, variant.script);
       } catch (e: unknown) {
-        setVariant(i, { vidStatus: "error", vidError: e instanceof Error ? e.message : "Error" });
+        setVariant(i, { vidStatus: "error", vidError: e instanceof Error ? e.message : t("err_unknown") });
       }
     });
   }
@@ -225,12 +225,12 @@ export default function BurstPage() {
                       <a href={`https://wa.me/?text=${encodeURIComponent(v.vidUrl)}`} target="_blank" rel="noopener noreferrer"
                         className="flex-1 py-2 rounded-lg text-xs font-bold text-center"
                         style={{ background: "#25D366", color: "#fff" }}>
-                        WA
+                        WhatsApp
                       </a>
                       <a href={`https://t.me/share/url?url=${encodeURIComponent(v.vidUrl)}`} target="_blank" rel="noopener noreferrer"
                         className="flex-1 py-2 rounded-lg text-xs font-bold text-center"
                         style={{ background: "#0088cc", color: "#fff" }}>
-                        TG
+                        Telegram
                       </a>
                       <button onClick={() => copyLink(v.vidUrl!, i)}
                         className="flex-1 py-2 rounded-lg text-xs font-bold"

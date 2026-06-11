@@ -9,14 +9,7 @@ import type { Lang } from "@/lib/translations";
 
 type VideoStatus = "idle" | "generating" | "done" | "error";
 
-const TEMPLATES: Record<Lang, { label: string; text: string }[]> = {
-  he: [
-    { label: "🏠 דיור", text: "תושבי [עיר] היקרים, שמי [שם], ואני רץ עבורכם. מחירי הדיור עלו פי שניים בחמש שנים האחרונות. המשפחות שלנו לא יכולות לגור בעיר שהם גדלו בה. התוכנית שלי: 500 יחידות דיור בר-השגה תוך שלוש שנים, ותמיכה ישירה לדיירים צעירים. יחד נחזיר את הבית לידי העם." },
-    { label: "🚌 תחבורה", text: "אני מבין אתכם — שעה וחצי בפקק לעבודה שצריכה לקחת עשרים דקות. זה לא גזרה משמיים. ההתחייבות שלי: הרחבת קווי הציבורי, ארבעים קילומטר שבילי אופניים חדשים, ופתרונות חניה שיורידו עומסים. כשנשפר את התחבורה, כולנו נרוויח — כולל הסביבה." },
-    { label: "📚 חינוך", text: "ילדינו ראויים לחינוך של מחר. אני [שם], ומתחייב לשפץ כל כיתה ישנה, לתת מחשב וכלי AI לכל תלמיד, ולהעלות משכורות מורים בחמישה-עשר אחוז. מורה מאושר — תלמיד מצליח. זו ההשקעה הכי חכמה שנוכל לעשות לעתיד שלנו." },
-    { label: "🛡️ ביטחון", text: "ביטחון אישי הוא הבסיס לכל השאר. אני מתחייב להוסיף תאורת רחוב בכל שכונה, להרחיב שיתוף פעולה בין משטרה וקהילה, ולהקים יחידת סייבר עירונית. כשתרגישו בטוחים ברחובות שלכם — תוכלו לחיות את חייכם במלואם." },
-    { label: "🌳 סביבה", text: "העיר שלנו יפה — ואנחנו חייבים לשמור עליה לילדינו. אני מתחייב: אלף עצים חדשים, חמישה פארקים עירוניים משודרגים, ותכנית מחזור שתחסוך שלושים אחוז פסולת. עיר ירוקה היא עיר בריאה ושווה לחיות בה." },
-  ],
+const TEMPLATES: Record<string, { label: string; text: string }[]> = {
   en: [
     { label: "🏠 Housing", text: "Dear residents of [city], my name is [name], and I'm running for you. Housing prices have doubled in five years. Our families can't afford to live in the city they grew up in. My plan: 500 affordable housing units in three years, plus direct support for young renters. Together, we'll bring home back to the people." },
     { label: "🚌 Transportation", text: "I understand you — ninety minutes in traffic for a commute that should take twenty. That's not inevitable. My commitment: expanded public transit, 40 km of new bike lanes, and smart parking solutions to cut congestion. When we improve transportation, everyone wins — including the environment." },
