@@ -65,7 +65,7 @@ export default function BurstPage() {
     setCreating(true);
     setVariants((prev) => prev.map((v) => ({ ...v, vidStatus: "pending" })));
 
-    variants.forEach(async (variant, i) => {
+    await Promise.all(variants.map(async (variant, i) => {
       try {
         setVariant(i, { vidStatus: "generating" });
         const res = await fetch("/api/generate", {
@@ -79,7 +79,9 @@ export default function BurstPage() {
       } catch (e: unknown) {
         setVariant(i, { vidStatus: "error", vidError: e instanceof Error ? e.message : t("err_unknown") });
       }
-    });
+    }));
+
+    setCreating(false);
   }
 
   function pollOne(i: number, id: string, script: string) {

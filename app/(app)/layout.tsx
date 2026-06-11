@@ -34,6 +34,7 @@ const CSS = `
   @media (min-width: 769px) {
     .mobile-bar { display: none !important; }
     .sidebar { transform: none !important; }
+    .sidebar-close { display: none !important; }
   }
 `;
 
@@ -73,8 +74,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           Campanha
         </Link>
         {/* Close button — mobile only */}
-        <button onClick={() => setMenuOpen(false)} className="text-lg leading-none"
-          style={{ color: "var(--muted)", display: menuOpen ? "block" : undefined }}>
+        <button onClick={() => setMenuOpen(false)} className="sidebar-close text-lg leading-none"
+          style={{ color: "var(--muted)" }}>
           ✕
         </button>
       </div>
