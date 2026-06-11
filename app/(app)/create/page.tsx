@@ -34,6 +34,14 @@ const TEMPLATES: Record<string, { label: string; text: string }[]> = {
   ],
 };
 
+const AUDIENCE_PRESETS: { pt: string; en: string; he: string; icon: string }[] = [
+  { icon: "👴", pt: "Idosos", en: "Seniors", he: "ותיקים" },
+  { icon: "🎓", pt: "Jovens", en: "Youth", he: "צעירים" },
+  { icon: "👨‍👩‍👧", pt: "Pais", en: "Parents", he: "הורים" },
+  { icon: "💼", pt: "Empresários", en: "Business", he: "עסקים" },
+  { icon: "👩", pt: "Mulheres", en: "Women", he: "נשים" },
+];
+
 const TONES: { key: Tone; pt: string; en: string; he: string }[] = [
   { key: "formal", pt: "Formal", en: "Formal", he: "רשמי" },
   { key: "warm", pt: "Caloroso", en: "Warm", he: "חמים" },
@@ -140,6 +148,11 @@ function CreatePageInner() {
       if (res.ok) {
         const data = await res.json();
         setTrackId(data.id);
+        // Persist trackId on the most recent video entry
+        try {
+          const vids = JSON.parse(localStorage.getItem("campanha_videos") || "[]");
+          if (vids[0] && !vids[0].trackId) { vids[0].trackId = data.id; localStorage.setItem("campanha_videos", JSON.stringify(vids)); }
+        } catch { /* ignore */ }
       }
     } catch { /* silent fail */ } finally {
       setTrackCreating(false);
@@ -250,7 +263,8 @@ function CreatePageInner() {
 
   function saveVideo(id: string, url: string, text: string) {
     const videos = JSON.parse(localStorage.getItem("campanha_videos") || "[]");
-    videos.unshift({ id, url, script: text.substring(0, 80), createdAt: new Date().toISOString() });
+    const name = text.trim().split(/\s+/).slice(0, 6).join(" ");
+    videos.unshift({ id, url, script: text.substring(0, 80), name, createdAt: new Date().toISOString() });
     localStorage.setItem("campanha_videos", JSON.stringify(videos.slice(0, 100)));
   }
 
@@ -336,8 +350,21 @@ function CreatePageInner() {
           <div className="mb-3">
             <label className="text-xs font-semibold block mb-1" style={{ color: "var(--muted)" }}>{t("crt_ai_audience")}</label>
             <input type="text" value={aiAudience} onChange={(e) => setAiAudience(e.target.value)} placeholder={t("crt_ai_audience_ph")}
-              className="w-full px-3 py-2 rounded-lg text-sm outline-none"
+              className="w-full px-3 py-2 rounded-lg text-sm outline-none mb-2"
               style={{ background: "var(--bg)", border: "1px solid var(--border)", color: "var(--text)" }} />
+            <div className="flex gap-1.5 flex-wrap">
+              {AUDIENCE_PRESETS.map((p) => {
+                const label = (p as Record<string, string>)[lang] ?? p.pt;
+                const active = aiAudience === label;
+                return (
+                  <button key={p.icon} onClick={() => setAiAudience(active ? "" : label)}
+                    className="flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium transition-all"
+                    style={{ background: active ? "var(--gold)" : "var(--bg)", color: active ? "#000" : "var(--muted)", border: `1px solid ${active ? "var(--gold)" : "var(--border)"}` }}>
+                    {p.icon} {label}
+                  </button>
+                );
+              })}
+            </div>
           </div>
           <div className="mb-3">
             <label className="text-xs font-semibold block mb-1.5" style={{ color: "var(--muted)" }}>{t("crt_tone_label")}</label>
