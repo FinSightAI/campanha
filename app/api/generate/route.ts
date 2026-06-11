@@ -2,24 +2,28 @@ import { NextRequest } from "next/server";
 
 export async function POST(req: NextRequest) {
   const apiKey = req.headers.get("x-did-key") || process.env.DID_API_KEY;
-  if (!apiKey) return Response.json({ error: "DID_API_KEY לא מוגדר" }, { status: 500 });
+  if (!apiKey) return Response.json({ error: "DID_API_KEY not configured" }, { status: 500 });
 
-  const { script, avatarId, voiceId } = await req.json();
+  const { script, avatarId, voiceId, bgUrl } = await req.json();
 
   if (!script || !avatarId) {
-    return Response.json({ error: "חסרים פרמטרים" }, { status: 400 });
+    return Response.json({ error: "Missing parameters" }, { status: 400 });
   }
 
-  const body = {
+  const body: Record<string, unknown> = {
     avatar_id: avatarId,
     script: {
       type: "text",
       input: script,
       provider: voiceId
         ? { type: "elevenlabs", voice_id: voiceId }
-        : { type: "microsoft", voice_id: "he-IL-AvriNeural" },
+        : { type: "microsoft", voice_id: "pt-BR-FranciscaNeural" },
     },
   };
+
+  if (bgUrl && bgUrl.trim()) {
+    body.background = { source_url: bgUrl.trim() };
+  }
 
   const res = await fetch("https://api.d-id.com/scenes", {
     method: "POST",
@@ -33,7 +37,7 @@ export async function POST(req: NextRequest) {
   const data = await res.json();
   if (!res.ok) {
     return Response.json(
-      { error: data.message || data.error || "שגיאה ב-D-ID" },
+      { error: data.message || data.error || "D-ID error" },
       { status: res.status }
     );
   }

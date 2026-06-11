@@ -8,6 +8,10 @@ import { getDIDHeaders } from "@/lib/didKey";
 import type { Lang } from "@/lib/translations";
 
 type VideoStatus = "idle" | "generating" | "done" | "error";
+type Tone = "formal" | "warm" | "urgent" | "chat";
+type ScriptLen = "short" | "med" | "long";
+
+const SCRIPT_LIMIT = 1000;
 
 const TEMPLATES: Record<string, { label: string; text: string }[]> = {
   en: [
@@ -26,6 +30,29 @@ const TEMPLATES: Record<string, { label: string; text: string }[]> = {
   ],
 };
 
+const TONES: { key: Tone; pt: string; en: string; he: string }[] = [
+  { key: "formal",  pt: "Formal",       en: "Formal",         he: "רשמי" },
+  { key: "warm",    pt: "Caloroso",     en: "Warm",           he: "חמים" },
+  { key: "urgent",  pt: "Urgente",      en: "Urgent",         he: "דחוף" },
+  { key: "chat",    pt: "Descontraído", en: "Conversational", he: "שיחתי" },
+];
+
+const LENGTHS: { key: ScriptLen; pt: string; en: string; he: string }[] = [
+  { key: "short", pt: "30 seg",  en: "30 sec",  he: "30 שנ" },
+  { key: "med",   pt: "1 min",   en: "1 min",   he: "דקה" },
+  { key: "long",  pt: "2 min",   en: "2 min",   he: "2 דק" },
+];
+
+function waMessage(name: string, url: string, lang: string) {
+  if (lang === "en") {
+    return `Hi! I'm ${name} and I'd like to share my campaign message with you.\n\n🎥 ${url}\n\nYour voice matters — count on my support!`;
+  }
+  if (lang === "he") {
+    return `שלום! אני ${name} ואני רוצה לשתף אתכם במסרון הקמפיין שלי.\n\n🎥 ${url}\n\nקולכם חשוב — סמכו עליי!`;
+  }
+  return `Olá! Sou ${name} e quero compartilhar minha mensagem de campanha com você.\n\n🎥 ${url}\n\nJuntos, podemos fazer mais pela nossa cidade. Conte comigo!`;
+}
+
 export default function CreatePage() {
   const { t, lang } = useLanguage();
   const [script, setScript] = useState("");
@@ -38,12 +65,18 @@ export default function CreatePage() {
   const [error, setError] = useState("");
   const [showTemplates, setShowTemplates] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [copiedWA, setCopiedWA] = useState(false);
   // AI writer
   const [showAI, setShowAI] = useState(false);
   const [aiTopic, setAiTopic] = useState("");
   const [aiAudience, setAiAudience] = useState("");
+  const [aiTone, setAiTone] = useState<Tone>("warm");
+  const [aiLen, setAiLen] = useState<ScriptLen>("med");
   const [aiWriting, setAiWriting] = useState(false);
   const [aiError, setAiError] = useState("");
+  // background
+  const [showBg, setShowBg] = useState(false);
+  const [bgUrl, setBgUrl] = useState("");
   // subtitles
   const [vttUrl, setVttUrl] = useState<string | null>(null);
   const prevVttUrl = useRef<string | null>(null);
@@ -55,7 +88,6 @@ export default function CreatePage() {
     setThumbnailUrl(localStorage.getItem("campanha_avatar_thumbnail") || "");
   }, []);
 
-  // Build VTT whenever a video is ready
   useEffect(() => {
     if (status === "done" && videoUrl && script) {
       if (prevVttUrl.current) URL.revokeObjectURL(prevVttUrl.current);
@@ -77,7 +109,7 @@ export default function CreatePage() {
       const res = await fetch("/api/ai-script", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ topic: aiTopic, audience: aiAudience, lang }),
+        body: JSON.stringify({ topic: aiTopic, audience: aiAudience, lang, tone: aiTone, length: aiLen }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
@@ -100,7 +132,7 @@ export default function CreatePage() {
       const res = await fetch("/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json", ...getDIDHeaders() },
-        body: JSON.stringify({ script: script.trim(), avatarId, voiceId }),
+        body: JSON.stringify({ script: script.trim(), avatarId, voiceId, bgUrl: bgUrl.trim() || undefined }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || t("err_unknown"));
@@ -158,6 +190,18 @@ export default function CreatePage() {
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   }
+
+  async function copyWA() {
+    if (!videoUrl) return;
+    await navigator.clipboard.writeText(waMessage(avatarName, videoUrl, lang));
+    setCopiedWA(true);
+    setTimeout(() => setCopiedWA(false), 2500);
+  }
+
+  // Script length state
+  const charCount = script.length;
+  const charPct = Math.min(charCount / SCRIPT_LIMIT, 1);
+  const charColor = charCount > SCRIPT_LIMIT * 0.9 ? "#e55" : charCount > SCRIPT_LIMIT * 0.7 ? "#d4af37" : "var(--muted)";
 
   if (!avatarId) {
     return (
@@ -228,6 +272,49 @@ export default function CreatePage() {
               style={{ background: "var(--bg)", border: "1px solid var(--border)", color: "var(--text)" }}
             />
           </div>
+
+          {/* Tone selector */}
+          <div className="mb-3">
+            <label className="text-xs font-semibold block mb-1.5" style={{ color: "var(--muted)" }}>{t("crt_tone_label")}</label>
+            <div className="flex gap-2 flex-wrap">
+              {TONES.map((tn) => (
+                <button
+                  key={tn.key}
+                  onClick={() => setAiTone(tn.key)}
+                  className="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
+                  style={{
+                    background: aiTone === tn.key ? "var(--gold)" : "var(--bg)",
+                    color: aiTone === tn.key ? "#000" : "var(--muted)",
+                    border: `1px solid ${aiTone === tn.key ? "var(--gold)" : "var(--border)"}`,
+                  }}
+                >
+                  {(tn as Record<string, string>)[lang] ?? tn.pt}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Length selector */}
+          <div className="mb-3">
+            <label className="text-xs font-semibold block mb-1.5" style={{ color: "var(--muted)" }}>{t("crt_len_label")}</label>
+            <div className="flex gap-2">
+              {LENGTHS.map((ln) => (
+                <button
+                  key={ln.key}
+                  onClick={() => setAiLen(ln.key)}
+                  className="flex-1 py-1.5 rounded-lg text-xs font-semibold transition-all"
+                  style={{
+                    background: aiLen === ln.key ? "var(--gold)" : "var(--bg)",
+                    color: aiLen === ln.key ? "#000" : "var(--muted)",
+                    border: `1px solid ${aiLen === ln.key ? "var(--gold)" : "var(--border)"}`,
+                  }}
+                >
+                  {(ln as Record<string, string>)[lang] ?? ln.pt}
+                </button>
+              ))}
+            </div>
+          </div>
+
           {aiError && <p className="text-xs mb-2" style={{ color: "#e55" }}>{aiError}</p>}
           <button
             onClick={writeWithAI}
@@ -258,7 +345,7 @@ export default function CreatePage() {
           <p className="text-xs px-3 py-2 font-semibold" style={{ background: "var(--bg)", color: "var(--muted)" }}>
             {t("crt_tpl_pick")}
           </p>
-          {TEMPLATES[lang].map((tpl) => (
+          {(TEMPLATES[lang] ?? TEMPLATES.en).map((tpl) => (
             <button
               key={tpl.label}
               onClick={() => { setScript(tpl.text); setShowTemplates(false); }}
@@ -272,7 +359,7 @@ export default function CreatePage() {
       )}
 
       {/* Script textarea */}
-      <div className="mb-6">
+      <div className="mb-2">
         <textarea
           value={script}
           onChange={(e) => setScript(e.target.value)}
@@ -280,9 +367,28 @@ export default function CreatePage() {
           rows={6}
           disabled={status === "generating"}
           className="w-full px-4 py-3 rounded-xl text-sm outline-none resize-none"
-          style={{ background: "var(--card)", border: "1px solid var(--border)", color: "var(--text)" }}
+          style={{ background: "var(--card)", border: `1px solid ${charCount > SCRIPT_LIMIT * 0.9 ? "#e55" : "var(--border)"}`, color: "var(--text)" }}
         />
-        <p className="text-xs mt-1 text-left" style={{ color: "var(--muted)" }}>{script.length} {t("crt_chars")}</p>
+        {/* Character meter */}
+        <div className="mt-1.5 mb-4">
+          <div className="flex justify-between items-center mb-1">
+            <span className="text-xs" style={{ color: charColor }}>
+              {charCount} / {SCRIPT_LIMIT} {t("crt_chars_left")}
+            </span>
+            {charCount > SCRIPT_LIMIT && (
+              <span className="text-xs font-semibold" style={{ color: "#e55" }}>⚠</span>
+            )}
+          </div>
+          <div className="h-1 rounded-full overflow-hidden" style={{ background: "var(--border)" }}>
+            <div
+              className="h-full rounded-full transition-all duration-300"
+              style={{
+                width: `${Math.min(charPct * 100, 100)}%`,
+                background: charCount > SCRIPT_LIMIT * 0.9 ? "#e55" : charCount > SCRIPT_LIMIT * 0.7 ? "#d4af37" : "var(--gold)",
+              }}
+            />
+          </div>
+        </div>
       </div>
 
       {/* Script preview card */}
@@ -308,11 +414,35 @@ export default function CreatePage() {
         );
       })()}
 
+      {/* Background image (advanced, collapsible) */}
+      {(status === "idle" || status === "error") && (
+        <div className="mb-4">
+          <button
+            onClick={() => setShowBg((v) => !v)}
+            className="flex items-center gap-1.5 text-xs transition-opacity hover:opacity-70"
+            style={{ color: "var(--muted)" }}
+          >
+            <span style={{ color: showBg ? "var(--gold)" : "var(--muted)" }}>◆</span>
+            {t("crt_bg_label")} {showBg ? "▲" : "▼"}
+          </button>
+          {showBg && (
+            <input
+              type="url"
+              value={bgUrl}
+              onChange={(e) => setBgUrl(e.target.value)}
+              placeholder={t("crt_bg_ph")}
+              className="w-full mt-2 px-3 py-2 rounded-lg text-xs outline-none"
+              style={{ background: "var(--card)", border: "1px solid var(--border)", color: "var(--text)" }}
+            />
+          )}
+        </div>
+      )}
+
       {/* Generate */}
       {(status === "idle" || status === "error") && (
         <button
           onClick={generate}
-          disabled={!script.trim()}
+          disabled={!script.trim() || charCount > SCRIPT_LIMIT}
           className="w-full py-4 rounded-xl font-bold text-sm disabled:opacity-40"
           style={{ background: "var(--gold)", color: "#000" }}
         >
@@ -360,6 +490,16 @@ export default function CreatePage() {
                 {t("crt_share_tg")}
               </a>
             </div>
+
+            {/* WA message template */}
+            <button
+              onClick={copyWA}
+              className="w-full py-3 rounded-xl text-sm font-bold transition-all"
+              style={{ background: copiedWA ? "#25D366" : "var(--card)", color: copiedWA ? "#fff" : "var(--text)", border: `1px solid ${copiedWA ? "#25D366" : "var(--border)"}` }}
+            >
+              {copiedWA ? t("crt_wa_copied") : `📋 ${t("crt_wa_copy")}`}
+            </button>
+
             <div className="flex gap-3">
               <a href={videoUrl} download className="flex-1 py-3 rounded-xl text-sm font-bold text-center" style={{ background: "var(--gold)", color: "#000" }}>
                 {t("crt_download")}
