@@ -285,6 +285,29 @@ export default function CreatePage() {
         <p className="text-xs mt-1 text-left" style={{ color: "var(--muted)" }}>{script.length} {t("crt_chars")}</p>
       </div>
 
+      {/* Script preview card */}
+      {(status === "idle" || status === "error") && script.trim().length > 10 && (() => {
+        const words = script.trim().split(/\s+/).length;
+        const estMin = Math.round(words / 130) || 1;
+        return (
+          <div className="mb-4 rounded-xl px-4 py-3 flex items-center gap-3" style={{ background: "var(--card)", border: "1px solid rgba(212,175,55,.25)" }}>
+            {thumbnailUrl ? (
+              <img src={thumbnailUrl} alt="" className="w-10 h-10 rounded-full object-cover flex-shrink-0" />
+            ) : (
+              <span className="text-xl flex-shrink-0" style={{ color: "var(--gold)" }}>◉</span>
+            )}
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-semibold mb-0.5" style={{ color: "var(--gold)" }}>{t("crt_preview_title")}</p>
+              <p className="text-xs truncate" style={{ color: "var(--muted)" }}>{script.trim().substring(0, 90)}{script.trim().length > 90 ? "…" : ""}</p>
+            </div>
+            <div className="flex-shrink-0 text-right">
+              <p className="text-sm font-bold" style={{ color: "var(--text)" }}>{estMin}</p>
+              <p className="text-xs" style={{ color: "var(--muted)" }}>{t("crt_est_min")}</p>
+            </div>
+          </div>
+        );
+      })()}
+
       {/* Generate */}
       {(status === "idle" || status === "error") && (
         <button
@@ -308,36 +331,47 @@ export default function CreatePage() {
 
       {/* Result */}
       {status === "done" && videoUrl && (
-        <div className="mt-6 rounded-xl overflow-hidden" style={{ border: "1px solid var(--border)" }}>
-          <video src={videoUrl} controls className="w-full">
-            {vttUrl && <track kind="subtitles" src={vttUrl} default label={t("crt_subtitles")} />}
-          </video>
-          <div className="p-4 space-y-3" style={{ background: "var(--card)" }}>
+        <div className="mt-6">
+          {/* Done header */}
+          <div className="rounded-xl p-5 mb-4 text-center" style={{ background: "linear-gradient(135deg,rgba(212,175,55,.13),rgba(212,175,55,.04))", border: "1px solid rgba(212,175,55,.4)" }}>
+            <div className="text-4xl mb-2">🎉</div>
+            <p className="text-lg font-bold mb-1" style={{ color: "var(--gold)" }}>{t("crt_done_title")}</p>
+            <p className="text-sm" style={{ color: "var(--muted)" }}>{t("crt_done_sub")}</p>
+          </div>
+
+          {/* Video player */}
+          <div className="rounded-xl overflow-hidden mb-4" style={{ border: "1px solid var(--border)" }}>
+            <video src={videoUrl} controls className="w-full">
+              {vttUrl && <track kind="subtitles" src={vttUrl} default label={t("crt_subtitles")} />}
+            </video>
+          </div>
+
+          {/* Share buttons */}
+          <div className="space-y-3">
+            <div className="grid grid-cols-2 gap-3">
+              <a href={`https://wa.me/?text=${encodeURIComponent(videoUrl)}`} target="_blank" rel="noopener noreferrer"
+                className="py-3.5 rounded-xl text-sm font-bold text-center"
+                style={{ background: "#25D366", color: "#fff" }}>
+                {t("crt_share_wa")}
+              </a>
+              <a href={`https://t.me/share/url?url=${encodeURIComponent(videoUrl)}`} target="_blank" rel="noopener noreferrer"
+                className="py-3.5 rounded-xl text-sm font-bold text-center"
+                style={{ background: "#0088cc", color: "#fff" }}>
+                {t("crt_share_tg")}
+              </a>
+            </div>
             <div className="flex gap-3">
-              <a href={videoUrl} download className="flex-1 py-2.5 rounded-lg text-sm font-bold text-center" style={{ background: "var(--gold)", color: "#000" }}>
+              <a href={videoUrl} download className="flex-1 py-3 rounded-xl text-sm font-bold text-center" style={{ background: "var(--gold)", color: "#000" }}>
                 {t("crt_download")}
               </a>
-              <button onClick={reset} className="flex-1 py-2.5 rounded-lg text-sm font-bold" style={{ background: "var(--bg)", border: "1px solid var(--border)", color: "var(--text)" }}>
+              <button onClick={copyLink}
+                className="flex-1 py-3 rounded-xl text-sm font-bold transition-colors"
+                style={{ background: copied ? "var(--gold)" : "var(--card)", color: copied ? "#000" : "var(--text)", border: "1px solid var(--border)" }}>
+                {copied ? t("crt_copied") : t("crt_copy_link")}
+              </button>
+              <button onClick={reset} className="flex-1 py-3 rounded-xl text-sm font-bold" style={{ background: "var(--bg)", border: "1px solid var(--border)", color: "var(--text)" }}>
                 {t("crt_create_more")}
               </button>
-            </div>
-            <div>
-              <p className="text-xs font-semibold mb-2" style={{ color: "var(--muted)" }}>{t("crt_share_title")}</p>
-              <div className="flex gap-2">
-                <a href={`https://wa.me/?text=${encodeURIComponent(videoUrl)}`} target="_blank" rel="noopener noreferrer"
-                  className="flex-1 py-2 rounded-lg text-xs font-bold text-center" style={{ background: "#25D366", color: "#fff" }}>
-                  {t("crt_share_wa")}
-                </a>
-                <a href={`https://t.me/share/url?url=${encodeURIComponent(videoUrl)}`} target="_blank" rel="noopener noreferrer"
-                  className="flex-1 py-2 rounded-lg text-xs font-bold text-center" style={{ background: "#0088cc", color: "#fff" }}>
-                  {t("crt_share_tg")}
-                </a>
-                <button onClick={copyLink}
-                  className="flex-1 py-2 rounded-lg text-xs font-bold transition-colors"
-                  style={{ background: copied ? "var(--gold)" : "var(--bg)", color: copied ? "#000" : "var(--text)", border: "1px solid var(--border)" }}>
-                  {copied ? t("crt_copied") : t("crt_copy_link")}
-                </button>
-              </div>
             </div>
           </div>
         </div>

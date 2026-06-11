@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { useLanguage } from "@/lib/LanguageContext";
 
 function Badge({ children, color = "gold" }: { children: React.ReactNode; color?: "gold" | "muted" }) {
@@ -22,23 +23,6 @@ function Section({ title, children }: { title: string; children: React.ReactNode
     <div className="rounded-xl p-6 mb-5" style={{ background: "var(--card)", border: "1px solid var(--border)" }}>
       <h2 className="text-base font-bold mb-4" style={{ color: "var(--text)" }}>{title}</h2>
       {children}
-    </div>
-  );
-}
-
-function Step({ number, label, children }: { number: string; label: string; children: React.ReactNode }) {
-  return (
-    <div className="flex gap-4 mb-5 last:mb-0">
-      <div
-        className="w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center text-sm font-bold mt-0.5"
-        style={{ background: "var(--gold)", color: "#000" }}
-      >
-        {number}
-      </div>
-      <div>
-        <p className="font-semibold text-sm mb-2" style={{ color: "var(--text)" }}>{label}</p>
-        {children}
-      </div>
     </div>
   );
 }
@@ -74,13 +58,94 @@ function Callout({ label, text }: { label: string; text: string }) {
   );
 }
 
+const STORAGE_KEY = "campanha_guide_checks";
+
 export default function GuidePage() {
   const { t } = useLanguage();
+  const [checks, setChecks] = useState<boolean[]>([false, false, false, false, false]);
+
+  useEffect(() => {
+    try {
+      const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+      if (Array.isArray(stored) && stored.length === 5) setChecks(stored);
+    } catch { /* ignore */ }
+  }, []);
+
+  function toggle(i: number) {
+    const next = checks.map((v, idx) => idx === i ? !v : v);
+    setChecks(next);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+  }
+
+  const allDone = checks.every(Boolean);
+  const doneCount = checks.filter(Boolean).length;
+
+  const checkLabels = [
+    t("guide_check_1"),
+    t("guide_check_2"),
+    t("guide_check_3"),
+    t("guide_check_4"),
+    t("guide_check_5"),
+  ];
 
   return (
     <div className="p-8 max-w-2xl">
       <h1 className="text-2xl font-bold mb-1" style={{ color: "var(--text)" }}>{t("guide_title")}</h1>
       <p className="text-sm mb-8" style={{ color: "var(--muted)" }}>{t("guide_subtitle")}</p>
+
+      {/* ─── Interactive Checklist ─── */}
+      <div className="rounded-xl p-5 mb-8" style={{ background: "linear-gradient(135deg,rgba(212,175,55,.1),rgba(212,175,55,.03))", border: "1px solid rgba(212,175,55,.3)" }}>
+        <div className="flex items-center justify-between mb-3">
+          <p className="text-sm font-bold" style={{ color: "var(--gold)" }}>{t("guide_subtitle")}</p>
+          <span className="text-xs font-bold px-2.5 py-1 rounded-full"
+            style={{ background: allDone ? "var(--gold)" : "var(--border)", color: allDone ? "#000" : "var(--muted)" }}>
+            {doneCount}/5
+          </span>
+        </div>
+        <p className="text-xs mb-4" style={{ color: "var(--muted)" }}>{t("guide_checklist_sub")}</p>
+
+        {/* Progress bar */}
+        <div className="h-1.5 rounded-full mb-4 overflow-hidden" style={{ background: "var(--border)" }}>
+          <div
+            className="h-full rounded-full transition-all duration-500"
+            style={{ width: `${(doneCount / 5) * 100}%`, background: "var(--gold)" }}
+          />
+        </div>
+
+        <div className="space-y-2">
+          {checkLabels.map((label, i) => (
+            <button
+              key={i}
+              onClick={() => toggle(i)}
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-left transition-opacity hover:opacity-80"
+              style={{
+                background: checks[i] ? "rgba(212,175,55,.08)" : "var(--card)",
+                border: `1px solid ${checks[i] ? "rgba(212,175,55,.4)" : "var(--border)"}`,
+              }}
+            >
+              <span
+                className="w-5 h-5 rounded flex-shrink-0 flex items-center justify-center text-xs font-bold transition-colors"
+                style={{
+                  background: checks[i] ? "var(--gold)" : "var(--border)",
+                  color: checks[i] ? "#000" : "var(--muted)",
+                }}
+              >
+                {checks[i] ? "✓" : ""}
+              </span>
+              <span style={{ color: checks[i] ? "var(--gold)" : "var(--text)", textDecoration: checks[i] ? "line-through" : "none", opacity: checks[i] ? 0.7 : 1 }}>
+                {label}
+              </span>
+            </button>
+          ))}
+        </div>
+
+        {allDone && (
+          <div className="mt-4 py-2.5 rounded-lg text-center text-sm font-bold"
+            style={{ background: "var(--gold)", color: "#000" }}>
+            {t("guide_checklist_done")}
+          </div>
+        )}
+      </div>
 
       {/* Overview */}
       <div className="grid grid-cols-2 gap-4 mb-6">

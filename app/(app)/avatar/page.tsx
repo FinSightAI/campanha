@@ -272,6 +272,29 @@ export default function AvatarPage() {
       <h1 className="text-2xl font-bold mb-1" style={{ color: "var(--text)" }}>{t("avt_title")}</h1>
       <p className="text-sm mb-6" style={{ color: "var(--muted)" }}>{t("avt_subtitle")}</p>
 
+      {/* What you'll need — only shown before starting */}
+      {step === "idle" && (
+        <div className="rounded-xl p-5 mb-6" style={{ background: "linear-gradient(135deg,rgba(212,175,55,.1),rgba(212,175,55,.03))", border: "1px solid rgba(212,175,55,.3)" }}>
+          <p className="text-sm font-bold mb-3" style={{ color: "var(--gold)" }}>{t("avt_need_title")}</p>
+          <div className="grid grid-cols-2 gap-2 mb-3">
+            {[
+              ["📹", lang === "pt" ? "Câmera ou smartphone" : lang === "en" ? "Camera or smartphone" : "מצלמה או סמארטפון"],
+              ["☀️", lang === "pt" ? "Boa iluminação" : lang === "en" ? "Good lighting" : "תאורה טובה"],
+              ["🎤", lang === "pt" ? "Ambiente silencioso" : lang === "en" ? "Quiet environment" : "סביבה שקטה"],
+              ["📁", "Google Drive / Dropbox"],
+            ].map(([icon, label]) => (
+              <div key={label} className="flex items-center gap-2 text-xs rounded-lg px-3 py-2" style={{ background: "var(--card)", color: "var(--muted)" }}>
+                <span>{icon}</span>
+                <span>{label}</span>
+              </div>
+            ))}
+          </div>
+          <div className="flex items-center gap-1.5 text-xs" style={{ color: "var(--muted)" }}>
+            <span>{t("avt_need_time")}</span>
+          </div>
+        </div>
+      )}
+
       {/* Progress steps */}
       {step !== "done" && step !== "error" && (
         <div className="flex items-center gap-2 mb-8">
