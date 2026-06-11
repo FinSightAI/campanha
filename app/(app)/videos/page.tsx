@@ -162,11 +162,16 @@ export default function VideosPage() {
                   </p>
 
                   {/* Action buttons */}
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 flex-wrap">
                     <a href={waUrl} target="_blank" rel="noopener noreferrer"
                       className="flex-1 py-2 rounded-lg text-xs font-bold text-center"
                       style={{ background: "#25D366", color: "#fff" }}>
                       {t("vid_share_wa")}
+                    </a>
+                    <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(video.url)}`} target="_blank" rel="noopener noreferrer"
+                      className="flex-1 py-2 rounded-lg text-xs font-bold text-center"
+                      style={{ background: "#1877F2", color: "#fff" }}>
+                      FB
                     </a>
                     <a href={video.url} download
                       className="flex-1 py-2 rounded-lg text-xs font-bold text-center"

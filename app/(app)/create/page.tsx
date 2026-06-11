@@ -623,6 +623,14 @@ function CreatePageInner() {
                 className="py-3.5 rounded-xl text-sm font-bold text-center" style={{ background: "#0088cc", color: "#fff" }}>
                 {t("crt_share_tg")}
               </a>
+              <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(trackUrl || videoUrl)}`} target="_blank" rel="noopener noreferrer"
+                className="py-3.5 rounded-xl text-sm font-bold text-center" style={{ background: "#1877F2", color: "#fff" }}>
+                Facebook
+              </a>
+              <a href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(trackUrl || videoUrl)}`} target="_blank" rel="noopener noreferrer"
+                className="py-3.5 rounded-xl text-sm font-bold text-center" style={{ background: "#0A66C2", color: "#fff" }}>
+                LinkedIn
+              </a>
             </div>
             <button onClick={copyWA} className="w-full py-3 rounded-xl text-sm font-bold transition-all"
               style={{ background: copiedWA ? "#25D366" : "var(--card)", color: copiedWA ? "#fff" : "var(--text)", border: `1px solid ${copiedWA ? "#25D366" : "var(--border)"}` }}>
