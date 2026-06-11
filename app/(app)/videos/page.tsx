@@ -22,6 +22,7 @@ export default function VideosPage() {
   const { t, lang } = useLanguage();
   const [videos, setVideos] = useState<VideoEntry[]>([]);
   const [avatarName, setAvatarName] = useState("");
+  const [avatarThumb, setAvatarThumb] = useState("");
   const [playing, setPlaying] = useState<string | null>(null);
   const [copied, setCopied] = useState<string | null>(null);
   const [stats, setStats] = useState<Record<string, number>>({});
@@ -32,6 +33,7 @@ export default function VideosPage() {
     const vids: VideoEntry[] = JSON.parse(localStorage.getItem("campanha_videos") || "[]");
     setVideos(vids);
     setAvatarName(localStorage.getItem("campanha_avatar_name") || "");
+    setAvatarThumb(localStorage.getItem("campanha_avatar_thumbnail") || "");
     // Fetch stats for videos with trackIds
     const ids = vids.map((v) => v.trackId).filter(Boolean) as string[];
     if (ids.length) {
@@ -115,12 +117,12 @@ export default function VideosPage() {
               <div key={video.id} className="vid-card rounded-xl overflow-hidden" style={{ background: "var(--card)", border: "1px solid var(--border)" }}>
                 {/* Thumbnail / player */}
                 {playing === video.id ? (
-                  <video src={video.url} controls autoPlay className="w-full aspect-video object-cover" />
+                  <video src={video.url} controls autoPlay poster={avatarThumb || undefined} className="w-full aspect-video object-cover" />
                 ) : (
                   <div className="vid-thumb relative w-full flex items-center justify-center cursor-pointer"
-                    style={{ background: "var(--bg)", aspectRatio: "16/9" }}
+                    style={{ aspectRatio: "16/9", background: avatarThumb ? `url(${avatarThumb}) center/cover` : "var(--bg)" }}
                     onClick={() => setPlaying(video.id)}>
-                    <div style={{ position: "absolute", inset: 0, background: "repeating-linear-gradient(180deg,transparent 0,transparent 3px,rgba(255,255,255,.015) 3px,rgba(255,255,255,.015) 4px)", pointerEvents: "none" }} />
+                    <div style={{ position: "absolute", inset: 0, background: avatarThumb ? "rgba(0,0,0,.45)" : "repeating-linear-gradient(180deg,transparent 0,transparent 3px,rgba(255,255,255,.015) 3px,rgba(255,255,255,.015) 4px)", pointerEvents: "none" }} />
                     <button className="play-btn w-14 h-14 rounded-full flex items-center justify-center text-xl z-10" style={{ background: "var(--gold)", color: "#000" }}>▶</button>
                     {/* View badge */}
                     {views !== null && (
@@ -163,10 +165,19 @@ export default function VideosPage() {
 
                   {/* Action buttons */}
                   <div className="flex gap-2 flex-wrap">
+                    <button onClick={async () => {
+                        const text = waMsg(avatarName, video.url, lang);
+                        if (navigator.share) { try { await navigator.share({ text, url: video.url }); return; } catch { /* fallback */ } }
+                        await navigator.clipboard.writeText(video.url);
+                      }}
+                      className="flex-1 py-2 rounded-lg text-xs font-bold text-center"
+                      style={{ background: "var(--gold)", color: "#000" }}>
+                      📤 {t("crt_share_native")}
+                    </button>
                     <a href={waUrl} target="_blank" rel="noopener noreferrer"
                       className="flex-1 py-2 rounded-lg text-xs font-bold text-center"
                       style={{ background: "#25D366", color: "#fff" }}>
-                      {t("vid_share_wa")}
+                      WA
                     </a>
                     <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(video.url)}`} target="_blank" rel="noopener noreferrer"
                       className="flex-1 py-2 rounded-lg text-xs font-bold text-center"

@@ -16,6 +16,7 @@ type ReviewResult = { strengths: string[]; weaknesses: string[]; suggestion: str
 
 const SCRIPT_LIMIT = 1000;
 const LIB_KEY = "campanha_scripts";
+const DRAFT_KEY = "campanha_draft";
 
 const TEMPLATES: Record<string, { label: string; text: string }[]> = {
   en: [
@@ -106,6 +107,9 @@ function CreatePageInner() {
   const [trackCreating, setTrackCreating] = useState(false);
   const [copiedTrack, setCopiedTrack] = useState(false);
 
+  // Draft
+  const [showDraftBanner, setShowDraftBanner] = useState(false);
+
   // Subtitles
   const [vttUrl, setVttUrl] = useState<string | null>(null);
   const prevVttUrl = useRef<string | null>(null);
@@ -121,6 +125,9 @@ function CreatePageInner() {
     if (topic) { setAiTopic(topic); setAiAudience(audience); setShowAI(true); }
     // Load library
     try { setSavedScripts(JSON.parse(localStorage.getItem(LIB_KEY) || "[]")); } catch { /* ignore */ }
+    // Check for saved draft
+    const draft = localStorage.getItem(DRAFT_KEY);
+    if (draft && draft.length > 10 && !topic) setShowDraftBanner(true);
   }, [searchParams]);
 
   useEffect(() => {
@@ -266,9 +273,20 @@ function CreatePageInner() {
     const name = text.trim().split(/\s+/).slice(0, 6).join(" ");
     videos.unshift({ id, url, script: text.substring(0, 80), name, createdAt: new Date().toISOString() });
     localStorage.setItem("campanha_videos", JSON.stringify(videos.slice(0, 100)));
+    localStorage.removeItem(DRAFT_KEY);
   }
 
   function reset() { setStatus("idle"); setVideoUrl(null); setError(""); setVttUrl(null); setTrackId(null); setReview(null); }
+
+  async function shareNative(url: string) {
+    const text = waMessage(avatarName, url, lang);
+    if (navigator.share) {
+      try { await navigator.share({ text, url }); return; } catch { /* fallback */ }
+    }
+    await navigator.clipboard.writeText(url);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
 
   async function copyLink() {
     if (!videoUrl) return;
@@ -461,9 +479,25 @@ function CreatePageInner() {
         </div>
       )}
 
+      {/* Draft restore banner */}
+      {showDraftBanner && (
+        <div className="flex items-center gap-3 rounded-xl px-4 py-3 mb-3" style={{ background: "var(--card)", border: "1px solid rgba(212,175,55,.4)" }}>
+          <span style={{ color: "var(--gold)" }}>📝</span>
+          <p className="flex-1 text-xs" style={{ color: "var(--text)" }}>{t("crt_draft_banner")}</p>
+          <button onClick={() => { setScript(localStorage.getItem(DRAFT_KEY) || ""); setShowDraftBanner(false); }}
+            className="text-xs font-bold px-2.5 py-1 rounded-lg" style={{ background: "var(--gold)", color: "#000" }}>
+            {t("crt_draft_restore")}
+          </button>
+          <button onClick={() => { localStorage.removeItem(DRAFT_KEY); setShowDraftBanner(false); }}
+            className="text-xs" style={{ color: "var(--muted)" }}>
+            {t("crt_draft_dismiss")}
+          </button>
+        </div>
+      )}
+
       {/* Textarea */}
       <div className="mb-2">
-        <textarea value={script} onChange={(e) => { setScript(e.target.value); setReview(null); }}
+        <textarea value={script} onChange={(e) => { setScript(e.target.value); setReview(null); localStorage.setItem(DRAFT_KEY, e.target.value); }}
           placeholder={t("crt_script_placeholder")} rows={6} disabled={status === "generating"}
           className="w-full px-4 py-3 rounded-xl text-sm outline-none resize-none"
           style={{ background: "var(--card)", border: `1px solid ${charCount > SCRIPT_LIMIT * 0.9 ? "#e55" : "var(--border)"}`, color: "var(--text)" }} />
@@ -572,7 +606,16 @@ function CreatePageInner() {
         </div>
       )}
 
-      {error && <p className="text-sm mt-3" style={{ color: "#e55" }}>{error}</p>}
+      {error && (
+        <div className="mt-3 flex items-center gap-3">
+          <p className="text-sm flex-1" style={{ color: "#e55" }}>{error}</p>
+          <button onClick={generate} disabled={!script.trim()}
+            className="text-xs font-bold px-3 py-1.5 rounded-lg flex-shrink-0 disabled:opacity-40"
+            style={{ background: "var(--card)", border: "1px solid var(--border)", color: "var(--gold)" }}>
+            {t("crt_retry")}
+          </button>
+        </div>
+      )}
 
       {/* Result */}
       {status === "done" && videoUrl && (
@@ -637,13 +680,14 @@ function CreatePageInner() {
               {copiedWA ? t("crt_wa_copied") : `📋 ${t("crt_wa_copy")}`}
             </button>
             <div className="flex gap-3">
+              <button onClick={() => shareNative(trackUrl || videoUrl)}
+                className="flex-1 py-3 rounded-xl text-sm font-bold"
+                style={{ background: "var(--card)", border: "1px solid var(--border)", color: "var(--text)" }}>
+                📤 {t("crt_share_native")}
+              </button>
               <a href={videoUrl} download className="flex-1 py-3 rounded-xl text-sm font-bold text-center" style={{ background: "var(--gold)", color: "#000" }}>
                 {t("crt_download")}
               </a>
-              <button onClick={copyLink} className="flex-1 py-3 rounded-xl text-sm font-bold transition-colors"
-                style={{ background: copied ? "var(--gold)" : "var(--card)", color: copied ? "#000" : "var(--text)", border: "1px solid var(--border)" }}>
-                {copied ? t("crt_copied") : t("crt_copy_link")}
-              </button>
               <button onClick={reset} className="flex-1 py-3 rounded-xl text-sm font-bold"
                 style={{ background: "var(--bg)", border: "1px solid var(--border)", color: "var(--text)" }}>
                 {t("crt_create_more")}
