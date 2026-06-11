@@ -20,12 +20,14 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const saved = localStorage.getItem("campanha_lang") as Lang | null;
-    if (saved && saved in translations) setLangState(saved);
+    // "he" was removed from the UI — treat it as "pt"
+    if (saved && saved in translations && saved !== "he") setLangState(saved);
+    document.documentElement.dir = "ltr";
   }, []);
 
   useEffect(() => {
-    document.documentElement.lang = lang;
-    document.documentElement.dir = lang === "he" ? "rtl" : "ltr";
+    document.documentElement.lang = lang === "pt" ? "pt-BR" : lang;
+    document.documentElement.dir = "ltr";
     localStorage.setItem("campanha_lang", lang);
   }, [lang]);
 

@@ -32,7 +32,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     <div className="min-h-screen flex" style={{ background: "var(--bg)" }}>
       {/* Sidebar */}
       <aside
-        className="w-56 flex-shrink-0 flex flex-col border-e"
+        className="w-56 flex-shrink-0 flex flex-col border-r"
         style={{ background: "var(--card)", borderColor: "var(--border)" }}
       >
         <div className="p-5 border-b" style={{ borderColor: "var(--border)" }}>

@@ -172,7 +172,7 @@ export default function Dashboard() {
                   <p className="font-bold">{t("dash_create_new")}</p>
                   <p className="text-xs opacity-70">{t("dash_create_hint")}</p>
                 </div>
-                <span className="ms-auto font-bold">→</span>
+                <span className="ml-auto font-bold">→</span>
               </Link>
 
               <Link
@@ -185,7 +185,7 @@ export default function Dashboard() {
                   <p className="font-bold">{t("dash_my_videos")}</p>
                   <p className="text-xs" style={{ color: "var(--muted)" }}>{videoCount} {t("nav_videos").toLowerCase()}</p>
                 </div>
-                <span className="ms-auto" style={{ color: "var(--muted)" }}>→</span>
+                <span className="ml-auto" style={{ color: "var(--muted)" }}>→</span>
               </Link>
             </div>
           </>
