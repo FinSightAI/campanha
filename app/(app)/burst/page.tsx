@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useLanguage } from "@/lib/LanguageContext";
 import { getDIDHeaders } from "@/lib/didKey";
@@ -25,6 +25,12 @@ export default function BurstPage() {
   const [writeError, setWriteError] = useState("");
   const [variants, setVariants] = useState<Variant[]>([]);
   const [copied, setCopied] = useState<number | null>(null);
+  const pollRefs = useRef<Map<number, ReturnType<typeof setInterval>>>(new Map());
+
+  useEffect(() => {
+    const refs = pollRefs.current;
+    return () => refs.forEach(id => clearInterval(id));
+  }, []);
 
   useEffect(() => {
     setAvatarId(localStorage.getItem("campanha_avatar_id"));
@@ -73,20 +79,20 @@ export default function BurstPage() {
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error);
-        pollOne(i, data.id, variant.script);
+        pollOne(i, data.id, variant.script, variant.audience);
       } catch (e: unknown) {
         setVariant(i, { vidStatus: "error", vidError: e instanceof Error ? e.message : t("err_unknown") });
       }
     }));
   }
 
-  function pollOne(i: number, id: string, script: string) {
+  function pollOne(i: number, id: string, script: string, audience?: string) {
     const MAX = 60;
     let attempts = 0;
     const interval = setInterval(async () => {
       attempts++;
       if (attempts > MAX) {
-        clearInterval(interval);
+        clearInterval(interval); pollRefs.current.delete(i);
         setVariant(i, { vidStatus: "error", vidError: t("err_timeout") });
         return;
       }
@@ -94,21 +100,24 @@ export default function BurstPage() {
         const res = await fetch(`/api/status/${id}`, { headers: getDIDHeaders() });
         const data = await res.json();
         if (data.status === "done") {
-          clearInterval(interval);
+          clearInterval(interval); pollRefs.current.delete(i);
           setVariant(i, { vidStatus: "done", vidUrl: data.result_url });
-          saveVideo(id, data.result_url, script);
+          saveVideo(id, data.result_url, script, audience);
         } else if (data.status === "error") {
-          clearInterval(interval);
+          clearInterval(interval); pollRefs.current.delete(i);
           setVariant(i, { vidStatus: "error", vidError: t("err_ai") });
         }
       } catch { /* keep polling */ }
     }, 3000);
+    pollRefs.current.set(i, interval);
   }
 
-  function saveVideo(id: string, url: string, script: string) {
-    const videos = JSON.parse(localStorage.getItem("campanha_videos") || "[]");
-    videos.unshift({ id, url, script: script.substring(0, 80), createdAt: new Date().toISOString() });
-    localStorage.setItem("campanha_videos", JSON.stringify(videos.slice(0, 100)));
+  function saveVideo(id: string, url: string, script: string, audience?: string) {
+    let videos: unknown[] = [];
+    try { videos = JSON.parse(localStorage.getItem("campanha_videos") || "[]"); } catch { videos = []; }
+    const name = audience || script.trim().split(/\s+/).slice(0, 6).join(" ");
+    videos.unshift({ id, url, script: script.substring(0, 80), name, createdAt: new Date().toISOString() });
+    localStorage.setItem("campanha_videos", JSON.stringify((videos as unknown[]).slice(0, 100)));
   }
 
   async function copyLink(url: string, i: number) {

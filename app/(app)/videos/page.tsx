@@ -107,11 +107,11 @@ function VideoTrimmer({ video, onClose, onSaved, lang, t }: {
       <div className="w-full max-w-lg rounded-2xl overflow-hidden" style={{ background: "var(--card)", border: "1px solid var(--border)" }}>
         <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom: "1px solid var(--border)" }}>
           <p className="font-bold text-sm" style={{ color: "var(--gold)" }}>✂️ {t("vid_trim")}</p>
-          <button onClick={onClose} style={{ color: "var(--muted)" }}>✕</button>
+          <button onClick={onClose} aria-label="Fechar" className="p-2" style={{ color: "var(--muted)" }}>✕</button>
         </div>
 
         <div className="p-5">
-          <video ref={videoRef} src={video.url} onLoadedMetadata={onLoaded}
+          <video ref={videoRef} src={video.url} crossOrigin="anonymous" onLoadedMetadata={onLoaded}
             className="w-full rounded-xl mb-5" style={{ maxHeight: 220, background: "#000" }}
             onTimeUpdate={() => {
               if (videoRef.current && videoRef.current.currentTime >= endTime) {
@@ -360,14 +360,14 @@ export default function VideosPage() {
                       style={{ background: copied === video.id ? "var(--gold)" : "var(--border)", color: copied === video.id ? "#000" : "var(--muted)" }}>
                       {copied === video.id ? "✓" : "🔗"}
                     </button>
-                    <button onClick={() => setTrimmingVideo(video)}
-                      className="px-2.5 py-2 rounded-lg text-xs font-semibold transition-opacity hover:opacity-70"
-                      style={{ background: "var(--bg)", border: "1px solid var(--border)", color: "var(--muted)" }}>
+                    <button onClick={() => setTrimmingVideo(video)} aria-label={t("vid_trim")}
+                      className="px-3 py-2 rounded-lg text-xs font-semibold transition-opacity hover:opacity-70"
+                      style={{ background: "var(--bg)", border: "1px solid var(--border)", color: "var(--muted)", minWidth: 44 }}>
                       ✂️
                     </button>
-                    <button onClick={() => remove(video.id)}
-                      className="px-2.5 py-2 rounded-lg text-xs transition-opacity hover:opacity-70"
-                      style={{ border: "1px solid var(--border)", color: "var(--muted)" }}>
+                    <button onClick={() => remove(video.id)} aria-label={t("vid_delete")}
+                      className="px-3 py-2 rounded-lg text-xs transition-opacity hover:opacity-70"
+                      style={{ border: "1px solid var(--border)", color: "var(--muted)", minWidth: 44 }}>
                       ✕
                     </button>
                   </div>

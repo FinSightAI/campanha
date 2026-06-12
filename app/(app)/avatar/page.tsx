@@ -235,8 +235,14 @@ export default function AvatarPage() {
   const [trainingVideoUrl, setTrainingVideoUrl] = useState("");
   const [thumbnailUrl, setThumbnailUrl] = useState("");
   const [error, setError] = useState("");
-  // Toggle between in-browser recorder and URL upload
   const [useRecorder, setUseRecorder] = useState(true);
+  const pollConsentRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const pollAvatarRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => () => {
+    if (pollConsentRef.current) clearInterval(pollConsentRef.current);
+    if (pollAvatarRef.current) clearInterval(pollAvatarRef.current);
+  }, []);
 
   useEffect(() => {
     const id = localStorage.getItem("campanha_avatar_id");
@@ -291,14 +297,15 @@ export default function AvatarPage() {
   async function pollConsent(id: string) {
     const MAX = 40;
     let attempts = 0;
-    const interval = setInterval(async () => {
+    if (pollConsentRef.current) clearInterval(pollConsentRef.current);
+    pollConsentRef.current = setInterval(async () => {
       attempts++;
-      if (attempts > MAX) { clearInterval(interval); setError(t("err_consent_timeout")); setStep("error"); return; }
+      if (attempts > MAX) { clearInterval(pollConsentRef.current!); setError(t("err_consent_timeout")); setStep("error"); return; }
       try {
         const res = await fetch(`/api/consent-status/${id}`, { headers: getDIDHeaders() });
         const data = await res.json();
-        if (data.status === "done") { clearInterval(interval); setStep("training_ready"); }
-        else if (data.status === "error") { clearInterval(interval); setError(t("err_consent_fail")); setStep("error"); }
+        if (!res.ok || data.status === "error") { clearInterval(pollConsentRef.current!); setError(data.error || t("err_consent_fail")); setStep("error"); }
+        else if (data.status === "done") { clearInterval(pollConsentRef.current!); setStep("training_ready"); }
       } catch { /* keep polling */ }
     }, 5000);
   }
@@ -325,24 +332,22 @@ export default function AvatarPage() {
   async function pollAvatar(id: string) {
     const MAX = 120;
     let attempts = 0;
-    const interval = setInterval(async () => {
+    if (pollAvatarRef.current) clearInterval(pollAvatarRef.current);
+    pollAvatarRef.current = setInterval(async () => {
       attempts++;
-      if (attempts > MAX) { clearInterval(interval); setError(t("err_training_timeout")); setStep("error"); return; }
+      if (attempts > MAX) { clearInterval(pollAvatarRef.current!); setError(t("err_training_timeout")); setStep("error"); return; }
       try {
         const res = await fetch(`/api/avatar-status/${id}`, { headers: getDIDHeaders() });
         const data = await res.json();
-        if (data.status === "done") {
-          clearInterval(interval);
+        if (!res.ok || data.status === "error") { clearInterval(pollAvatarRef.current!); setError(data.error || t("err_training_fail")); setStep("error"); }
+        else if (data.status === "done") {
+          clearInterval(pollAvatarRef.current!);
           localStorage.setItem("campanha_avatar_id", id);
           localStorage.setItem("campanha_avatar_name", avatarName);
           localStorage.setItem("campanha_avatar_voice_id", data.voiceId || "");
           localStorage.setItem("campanha_avatar_thumbnail", data.thumbnailUrl || "");
           setThumbnailUrl(data.thumbnailUrl || "");
           setStep("done");
-        } else if (data.status === "error") {
-          clearInterval(interval);
-          setError(t("err_training_fail"));
-          setStep("error");
         }
       } catch { /* keep polling */ }
     }, 8000);

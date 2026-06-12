@@ -22,7 +22,10 @@ export async function POST(req: NextRequest) {
   };
 
   if (bgUrl && bgUrl.trim()) {
-    body.background = { source_url: bgUrl.trim() };
+    try {
+      const u = new URL(bgUrl.trim());
+      if (u.protocol === "https:") body.background = { source_url: u.href };
+    } catch { /* invalid URL — skip background */ }
   }
 
   const res = await fetch("https://api.d-id.com/scenes", {

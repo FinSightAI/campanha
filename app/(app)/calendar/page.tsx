@@ -183,8 +183,8 @@ export default function CalendarPage() {
         </button>
       </div>
 
-      {/* 7-day grid */}
-      <div className="grid gap-3" style={{ gridTemplateColumns: "repeat(7, minmax(0, 1fr))" }}>
+      {/* 7-day grid — scrollable on mobile so 7 columns stay usable */}
+      <div className="grid gap-3" style={{ gridTemplateColumns: "repeat(7, minmax(110px, 1fr))", overflowX: "auto" }}>
         {days.map((day) => {
           const dateStr = toDateStr(day);
           const isToday = dateStr === todayStr;
@@ -257,36 +257,36 @@ export default function CalendarPage() {
                     placeholder={lang === "pt" ? "Título" : lang === "en" ? "Title" : "כותרת"}
                     value={newTitle}
                     onChange={(e) => setNewTitle(e.target.value)}
-                    className="w-full px-2 py-1 rounded text-xs outline-none"
-                    style={{ background: "var(--bg)", border: "1px solid var(--gold)", color: "var(--text)" }}
+                    className="w-full px-2 py-1 rounded outline-none"
+                    style={{ background: "var(--bg)", border: "1px solid var(--gold)", color: "var(--text)", fontSize: 16 }}
                   />
                   <input
                     type="text"
                     placeholder={lang === "pt" ? "Tema do vídeo" : lang === "en" ? "Video topic" : "נושא"}
                     value={newTopic}
                     onChange={(e) => setNewTopic(e.target.value)}
-                    className="w-full px-2 py-1 rounded text-xs outline-none"
-                    style={{ background: "var(--bg)", border: "1px solid var(--border)", color: "var(--text)" }}
+                    className="w-full px-2 py-1 rounded outline-none"
+                    style={{ background: "var(--bg)", border: "1px solid var(--border)", color: "var(--text)", fontSize: 16 }}
                   />
                   <input
                     type="text"
                     placeholder={lang === "pt" ? "Público" : lang === "en" ? "Audience" : "קהל"}
                     value={newAudience}
                     onChange={(e) => setNewAudience(e.target.value)}
-                    className="w-full px-2 py-1 rounded text-xs outline-none"
-                    style={{ background: "var(--bg)", border: "1px solid var(--border)", color: "var(--text)" }}
+                    className="w-full px-2 py-1 rounded outline-none"
+                    style={{ background: "var(--bg)", border: "1px solid var(--border)", color: "var(--text)", fontSize: 16 }}
                   />
                   <div className="flex gap-1">
                     <button
                       onClick={() => addPlan(dateStr)}
-                      className="flex-1 py-1 rounded text-xs font-bold"
+                      className="flex-1 py-2 rounded text-sm font-bold"
                       style={{ background: "var(--gold)", color: "#000" }}
                     >
                       ✓
                     </button>
                     <button
                       onClick={() => { setAdding(null); setNewTitle(""); setNewTopic(""); setNewAudience(""); }}
-                      className="flex-1 py-1 rounded text-xs"
+                      className="flex-1 py-2 rounded text-sm"
                       style={{ border: "1px solid var(--border)", color: "var(--muted)" }}
                     >
                       ✕

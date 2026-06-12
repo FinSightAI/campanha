@@ -6,6 +6,10 @@ export async function POST(req: NextRequest) {
 
   const { name, consentId, sourceUrl } = await req.json();
 
+  try { const u = new URL(sourceUrl || ""); if (u.protocol !== "https:") throw new Error(); } catch {
+    return Response.json({ error: "Invalid sourceUrl" }, { status: 400 });
+  }
+
   const res = await fetch("https://api.d-id.com/scenes/avatars", {
     method: "POST",
     headers: {

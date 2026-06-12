@@ -10,7 +10,11 @@ export async function POST(
   const { id } = await params;
   const { name, sourceUrl } = await req.json();
 
-  const res = await fetch(`https://api.d-id.com/consents/${id}`, {
+  try { const u = new URL(sourceUrl || ""); if (u.protocol !== "https:") throw new Error(); } catch {
+    return Response.json({ error: "Invalid sourceUrl" }, { status: 400 });
+  }
+
+  const res = await fetch(`https://api.d-id.com/consents/${id}/video`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

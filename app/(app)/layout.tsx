@@ -26,9 +26,10 @@ const CSS = `
     }
     .mobile-bar {
       display: flex;
+      padding-top: max(12px, env(safe-area-inset-top));
     }
     .app-main {
-      padding-top: 52px;
+      padding-top: calc(52px + env(safe-area-inset-top, 0px));
     }
   }
   @media (min-width: 769px) {
@@ -74,7 +75,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           Campanha
         </Link>
         {/* Close button — mobile only */}
-        <button onClick={() => setMenuOpen(false)} className="sidebar-close text-lg leading-none"
+        <button onClick={() => setMenuOpen(false)} aria-label="Fechar menu" className="sidebar-close p-2 text-lg leading-none"
           style={{ color: "var(--muted)" }}>
           ✕
         </button>
@@ -142,7 +143,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           {/* Mobile top bar */}
           <div className="mobile-bar items-center gap-3 px-4 py-3 border-b"
             style={{ background: "var(--card)", borderColor: "var(--border)", position: "fixed", top: 0, left: 0, right: 0, zIndex: 30 }}>
-            <button onClick={() => setMenuOpen(true)} className="text-xl leading-none" style={{ color: "var(--gold)" }}>
+            <button onClick={() => setMenuOpen(true)} aria-label="Abrir menu" className="text-xl p-1 leading-none" style={{ color: "var(--gold)" }}>
               ☰
             </button>
             <span className="text-base font-bold" style={{ color: "var(--gold)" }}>Campanha</span>

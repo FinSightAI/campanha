@@ -1,8 +1,9 @@
 import { put, list } from "@vercel/blob";
 import { NextResponse } from "next/server";
+import { randomBytes } from "crypto";
 
 function genId() {
-  return Math.random().toString(36).slice(2, 8);
+  return randomBytes(4).toString("hex"); // 32-bit CSPRNG, 16^8 space
 }
 
 export async function POST(req: Request) {
@@ -11,6 +12,11 @@ export async function POST(req: Request) {
 
   const { videoUrl } = await req.json();
   if (!videoUrl) return NextResponse.json({ error: "Missing videoUrl" }, { status: 400 });
+
+  // Validate videoUrl is a real HTTPS URL
+  try { const u = new URL(videoUrl); if (u.protocol !== "https:") throw new Error(); } catch {
+    return NextResponse.json({ error: "Invalid videoUrl" }, { status: 400 });
+  }
 
   const id = genId();
   const data = JSON.stringify({ videoUrl, count: 0, createdAt: new Date().toISOString() });
@@ -36,8 +42,8 @@ export async function GET(req: Request) {
   await Promise.all(
     ids.map(async (id) => {
       try {
-        const { blobs } = await list({ prefix: `tracks/${id}`, token });
-        const blob = blobs[0];
+        const { blobs } = await list({ prefix: `tracks/${id}.json`, token });
+        const blob = blobs.find(b => b.pathname === `tracks/${id}.json`);
         if (blob) {
           const res = await fetch(blob.url);
           if (res.ok) {

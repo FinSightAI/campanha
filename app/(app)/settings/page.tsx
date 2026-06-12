@@ -104,8 +104,8 @@ export default function SettingsPage() {
         <label className="text-xs font-semibold block mb-1.5" style={{ color: "var(--muted)" }}>{t("set_did_label")}</label>
         <input type="password" value={key} onChange={(e) => setKey(e.target.value)}
           placeholder={t("set_did_ph")}
-          className="w-full px-4 py-3 rounded-lg text-sm outline-none mb-4 font-mono"
-          style={{ background: "var(--bg)", border: "1px solid var(--border)", color: "var(--text)" }} />
+          className="w-full px-4 py-3 rounded-lg outline-none mb-4 font-mono"
+          style={{ background: "var(--bg)", border: "1px solid var(--border)", color: "var(--text)", fontSize: 16 }} />
         <div className="flex gap-3">
           <button onClick={save} className="flex-1 py-3 rounded-xl font-bold text-sm" style={{ background: "var(--gold)", color: "#000" }}>
             {saved ? t("set_saved") : t("set_save")}
@@ -149,9 +149,9 @@ export default function SettingsPage() {
           <p className="text-xs font-semibold mb-2" style={{ color: "var(--muted)" }}>{t("sync_load_label")}</p>
           <div className="flex gap-2">
             <input value={loadCode} onChange={(e) => setLoadCode(e.target.value.toUpperCase())}
-              placeholder={t("sync_enter")} maxLength={8}
-              className="flex-1 px-3 py-2.5 rounded-lg text-sm outline-none font-mono tracking-widest uppercase"
-              style={{ background: "var(--bg)", border: "1px solid var(--border)", color: "var(--text)" }} />
+              placeholder={t("sync_enter")} maxLength={10}
+              className="flex-1 px-3 py-2.5 rounded-lg outline-none font-mono tracking-widest uppercase"
+              style={{ background: "var(--bg)", border: "1px solid var(--border)", color: "var(--text)", fontSize: 16 }} />
             <button onClick={loadFromCode} disabled={!loadCode.trim() || loadState === "loading"}
               className="px-4 py-2.5 rounded-lg text-sm font-bold disabled:opacity-40"
               style={{

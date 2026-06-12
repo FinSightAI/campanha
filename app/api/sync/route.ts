@@ -1,8 +1,10 @@
 import { put, list } from "@vercel/blob";
 import { NextResponse } from "next/server";
+import { randomBytes } from "crypto";
 
 function genCode() {
-  return Math.random().toString(36).slice(2, 10).toUpperCase();
+  // 5 crypto-random bytes → 10 hex chars uppercase
+  return randomBytes(5).toString("hex").toUpperCase();
 }
 
 export async function POST(req: Request) {
@@ -13,7 +15,9 @@ export async function POST(req: Request) {
   if (!data) return NextResponse.json({ error: "Missing data" }, { status: 400 });
 
   const code = genCode();
-  await put(`sync/${code}.json`, JSON.stringify(data), {
+  // Store with a 24-hour expiry timestamp
+  const payload = JSON.stringify({ data, expiresAt: Date.now() + 24 * 60 * 60 * 1000 });
+  await put(`sync/${code}.json`, payload, {
     access: "public",
     addRandomSuffix: false,
     token,
@@ -32,13 +36,17 @@ export async function GET(req: Request) {
   if (!code) return NextResponse.json({ error: "Missing code" }, { status: 400 });
 
   try {
-    const { blobs } = await list({ prefix: `sync/${code}`, token });
-    const blob = blobs[0];
+    const { blobs } = await list({ prefix: `sync/${code}.json`, token });
+    const blob = blobs.find(b => b.pathname === `sync/${code}.json`);
     if (!blob) return NextResponse.json({ error: "Not found" }, { status: 404 });
     const res = await fetch(blob.url);
     if (!res.ok) return NextResponse.json({ error: "Failed to fetch" }, { status: 500 });
-    const data = await res.json();
-    return NextResponse.json({ data });
+    const payload = await res.json();
+    // Check expiry
+    if (payload.expiresAt && Date.now() > payload.expiresAt) {
+      return NextResponse.json({ error: "Code expired" }, { status: 410 });
+    }
+    return NextResponse.json({ data: payload.data });
   } catch {
     return NextResponse.json({ error: "Error fetching sync data" }, { status: 500 });
   }

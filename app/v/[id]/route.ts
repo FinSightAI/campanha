@@ -18,6 +18,11 @@ export async function GET(
     const data = await fetch(blob.url).then((r) => r.json());
     const videoUrl = data.videoUrl as string;
 
+    // Validate redirect target is a real HTTPS URL
+    let parsedUrl: URL;
+    try { parsedUrl = new URL(videoUrl); } catch { return NextResponse.redirect(new URL("/", _req.url)); }
+    if (!["https:", "http:"].includes(parsedUrl.protocol)) return NextResponse.redirect(new URL("/", _req.url));
+
     // Increment count asynchronously (best-effort)
     const updated = JSON.stringify({ ...data, count: (data.count ?? 0) + 1 });
     put(`tracks/${id}.json`, updated, {
@@ -27,7 +32,7 @@ export async function GET(
       contentType: "application/json",
     }).catch(() => {});
 
-    return NextResponse.redirect(videoUrl);
+    return NextResponse.redirect(parsedUrl.href);
   } catch {
     return NextResponse.redirect(new URL("/", _req.url));
   }

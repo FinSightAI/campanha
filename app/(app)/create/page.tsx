@@ -75,6 +75,9 @@ function CreatePageInner() {
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [copiedWA, setCopiedWA] = useState(false);
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => () => { if (pollRef.current) clearInterval(pollRef.current); }, []);
 
   // UI toggles
   const [showTemplates, setShowTemplates] = useState(false);
@@ -253,14 +256,15 @@ function CreatePageInner() {
   async function pollStatus(id: string) {
     const MAX = 60;
     let attempts = 0;
-    const interval = setInterval(async () => {
+    if (pollRef.current) clearInterval(pollRef.current);
+    pollRef.current = setInterval(async () => {
       attempts++;
-      if (attempts > MAX) { clearInterval(interval); setError(t("err_timeout")); setStatus("error"); return; }
+      if (attempts > MAX) { clearInterval(pollRef.current!); setError(t("err_timeout")); setStatus("error"); return; }
       try {
         const res = await fetch(`/api/status/${id}`, { headers: getDIDHeaders() });
         const data = await res.json();
-        if (data.status === "done") { clearInterval(interval); setVideoUrl(data.result_url); setStatus("done"); saveVideo(id, data.result_url, script); }
-        else if (data.status === "error") { clearInterval(interval); setError(t("err_ai")); setStatus("error"); }
+        if (data.status === "done") { clearInterval(pollRef.current!); setVideoUrl(data.result_url); setStatus("done"); saveVideo(id, data.result_url, script); }
+        else if (data.status === "error") { clearInterval(pollRef.current!); setError(t("err_ai")); setStatus("error"); }
       } catch { /* keep polling */ }
     }, 3000);
   }
