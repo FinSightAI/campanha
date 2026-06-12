@@ -1,5 +1,6 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { NextResponse } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
+import { rateLimit } from "@/lib/rateLimit";
 
 const TONE_MAP: Record<string, string> = {
   formal: "formal, authoritative, and professional",
@@ -14,12 +15,15 @@ const LENGTH_MAP: Record<string, { words: number; label: string }> = {
   long: { words: 260, label: "2 minutes" },
 };
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
+  const ip = req.headers.get("x-forwarded-for")?.split(",")[0] ?? "unknown";
+  if (!rateLimit(ip, 20, 60)) return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+
   const { topic, audience, area, lang, tone = "warm", length = "med" } = await req.json();
   if (!topic) return NextResponse.json({ error: "Missing topic" }, { status: 400 });
 
   const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) return NextResponse.json({ error: "GEMINI_API_KEY not configured" }, { status: 500 });
+  if (!apiKey) return NextResponse.json({ error: "Serviço de IA indisponível. Contate o suporte." }, { status: 503 });
 
   const langLabel = lang === "he" ? "Hebrew" : lang === "pt" ? "Brazilian Portuguese" : "English";
   const audienceStr = audience ? ` The audience is: ${audience}.` : "";

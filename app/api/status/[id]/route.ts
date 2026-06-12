@@ -1,4 +1,5 @@
 import type { NextRequest } from "next/server";
+import { put } from "@vercel/blob";
 
 export async function GET(
   req: NextRequest,
@@ -15,6 +16,24 @@ export async function GET(
 
   const data = await res.json();
   if (!res.ok) return Response.json({ error: data.message || "שגיאה" }, { status: res.status });
+
+  if (data.status === "done" && data.result_url) {
+    // Already archived to Blob on a previous poll
+    if (data.result_url.includes("blob.vercel-storage.com")) {
+      return Response.json({ status: "done", result_url: data.result_url });
+    }
+    try {
+      const vid = await fetch(data.result_url, { signal: AbortSignal.timeout(40000) });
+      const contentType = vid.headers.get("content-type") || "video/mp4";
+      const ext = contentType.includes("webm") ? "webm" : "mp4";
+      const buffer = await vid.arrayBuffer();
+      const { url } = await put(`videos/${id}.${ext}`, buffer, { access: "public", contentType });
+      return Response.json({ status: "done", result_url: url });
+    } catch {
+      // Fall back to D-ID URL if archival fails
+      return Response.json({ status: "done", result_url: data.result_url });
+    }
+  }
 
   return Response.json({
     status: data.status,

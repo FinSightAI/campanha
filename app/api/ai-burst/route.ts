@@ -1,5 +1,6 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { NextResponse } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
+import { rateLimit } from "@/lib/rateLimit";
 
 const AUDIENCES = {
   he: ["צעירים (18–35)", "ותיקים (65+)", "הורים לילדים", "בעלי עסקים", "קהל כללי"],
@@ -7,12 +8,15 @@ const AUDIENCES = {
   pt: ["Jovens (18–35)", "Idosos (65+)", "Pais com filhos", "Empresários", "Público geral"],
 };
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
+  const ip = req.headers.get("x-forwarded-for")?.split(",")[0] ?? "unknown";
+  if (!rateLimit(ip, 20, 60)) return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+
   const { topic, area, lang } = await req.json();
   if (!topic) return NextResponse.json({ error: "Missing topic" }, { status: 400 });
 
   const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) return NextResponse.json({ error: "GEMINI_API_KEY not configured" }, { status: 500 });
+  if (!apiKey) return NextResponse.json({ error: "Serviço de IA indisponível. Contate o suporte." }, { status: 503 });
 
   const langLabel = lang === "he" ? "Hebrew" : lang === "pt" ? "Brazilian Portuguese" : "English";
   const areaStr = area ? ` for ${area}` : "";
