@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useLanguage } from "@/lib/LanguageContext";
 import { scriptToVTT } from "@/lib/subtitles";
-import { getDIDHeaders } from "@/lib/didKey";
+import { getDIDHeaders, getAppHeaders } from "@/lib/didKey";
 
 type VideoStatus = "idle" | "generating" | "done" | "error";
 type Tone = "formal" | "warm" | "urgent" | "chat";
@@ -78,6 +78,7 @@ function CreatePageInner() {
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => () => { if (pollRef.current) clearInterval(pollRef.current); }, []);
+  useEffect(() => () => { if (prevVttUrl.current) URL.revokeObjectURL(prevVttUrl.current); }, []);
 
   // UI toggles
   const [showTemplates, setShowTemplates] = useState(false);
@@ -136,7 +137,7 @@ function CreatePageInner() {
     try {
       const res = await fetch("/api/track", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...getAppHeaders() },
         body: JSON.stringify({ videoUrl: url }),
       });
       if (res.ok) {
@@ -173,7 +174,7 @@ function CreatePageInner() {
     try {
       const res = await fetch("/api/ai-script", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...getAppHeaders() },
         body: JSON.stringify({ topic: aiTopic, audience: aiAudience, lang, tone: aiTone, length: aiLen }),
       });
       const data = await res.json();
@@ -196,7 +197,7 @@ function CreatePageInner() {
     try {
       const res = await fetch("/api/ai-review", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...getAppHeaders() },
         body: JSON.stringify({ script, lang }),
       });
       const data = await res.json();
@@ -270,10 +271,11 @@ function CreatePageInner() {
   }
 
   function saveVideo(id: string, url: string, text: string) {
-    const videos = JSON.parse(localStorage.getItem("campanha_videos") || "[]");
+    let videos: unknown[] = [];
+    try { videos = JSON.parse(localStorage.getItem("campanha_videos") || "[]"); } catch { videos = []; }
     const name = text.trim().split(/\s+/).slice(0, 6).join(" ");
     videos.unshift({ id, url, script: text.substring(0, 80), name, createdAt: new Date().toISOString() });
-    localStorage.setItem("campanha_videos", JSON.stringify(videos.slice(0, 100)));
+    localStorage.setItem("campanha_videos", JSON.stringify((videos as unknown[]).slice(0, 100)));
     localStorage.removeItem(DRAFT_KEY);
   }
 

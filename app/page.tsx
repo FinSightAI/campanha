@@ -135,7 +135,7 @@ export default function Home() {
             </p>
 
             <div className="a4" style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 14 }}>
-              <Link href="/dashboard" className="cta-btn"
+              <Link href="/avatar" className="cta-btn"
                 style={{ display: "inline-block", background: "#d4af37", color: "#000", borderRadius: 14, padding: "18px 52px", fontSize: 16, fontWeight: 700, textDecoration: "none", fontFamily: "inherit", letterSpacing: "-.02em", boxShadow: "0 4px 20px rgba(212,175,55,.2)" }}>
                 {c.cta}
               </Link>

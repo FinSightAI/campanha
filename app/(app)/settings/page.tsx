@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useLanguage } from "@/lib/LanguageContext";
+import { getAppHeaders } from "@/lib/didKey";
 
 const SYNC_KEYS = [
   "campanha_avatar_id", "campanha_avatar_name", "campanha_avatar_voice_id",
@@ -13,6 +14,9 @@ export default function SettingsPage() {
   const [key, setKey] = useState("");
   const [saved, setSaved] = useState(false);
   const [hasKey, setHasKey] = useState(false);
+  const reloadTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => () => { if (reloadTimerRef.current) clearTimeout(reloadTimerRef.current); }, []);
 
   // Sync state
   const [syncCode, setSyncCode] = useState("");
@@ -47,7 +51,7 @@ export default function SettingsPage() {
       SYNC_KEYS.forEach((k) => { data[k] = localStorage.getItem(k); });
       const res = await fetch("/api/sync", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...getAppHeaders() },
         body: JSON.stringify({ data }),
       });
       const json = await res.json();
@@ -61,7 +65,7 @@ export default function SettingsPage() {
     if (!loadCode.trim()) return;
     setLoadState("loading");
     try {
-      const res = await fetch(`/api/sync?code=${encodeURIComponent(loadCode.trim())}`);
+      const res = await fetch(`/api/sync?code=${encodeURIComponent(loadCode.trim())}`, { headers: getAppHeaders() });
       const json = await res.json();
       if (!res.ok) throw new Error();
       const data: Record<string, string | null> = json.data;
@@ -70,7 +74,7 @@ export default function SettingsPage() {
         else localStorage.removeItem(k);
       });
       setLoadState("success");
-      setTimeout(() => window.location.reload(), 1200);
+      reloadTimerRef.current = setTimeout(() => window.location.reload(), 1200);
     } catch {
       setLoadState("error");
       setTimeout(() => setLoadState("idle"), 3000);

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { upload } from "@vercel/blob/client";
 import { useLanguage } from "@/lib/LanguageContext";
+import { getAppHeaders } from "@/lib/didKey";
 
 type VideoEntry = { id: string; url: string; script: string; name?: string; trackId?: string; createdAt: string };
 
@@ -196,14 +197,15 @@ export default function VideosPage() {
   const [trimmingVideo, setTrimmingVideo] = useState<VideoEntry | null>(null);
 
   useEffect(() => {
-    const vids: VideoEntry[] = JSON.parse(localStorage.getItem("campanha_videos") || "[]");
+    let vids: VideoEntry[] = [];
+    try { vids = JSON.parse(localStorage.getItem("campanha_videos") || "[]"); } catch { vids = []; }
     setVideos(vids);
     setAvatarName(localStorage.getItem("campanha_avatar_name") || "");
     setAvatarThumb(localStorage.getItem("campanha_avatar_thumbnail") || "");
     // Fetch stats for videos with trackIds
     const ids = vids.map((v) => v.trackId).filter(Boolean) as string[];
     if (ids.length) {
-      fetch(`/api/track?ids=${ids.join(",")}`)
+      fetch(`/api/track?ids=${ids.join(",")}`, { headers: getAppHeaders() })
         .then((r) => r.json())
         .then((data) => setStats(data.stats || {}))
         .catch(() => {});

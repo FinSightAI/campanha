@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useLanguage } from "@/lib/LanguageContext";
-import { getDIDHeaders } from "@/lib/didKey";
+import { getDIDHeaders, getAppHeaders } from "@/lib/didKey";
 
 type VidStatus = "idle" | "pending" | "generating" | "done" | "error";
 
@@ -49,7 +49,7 @@ export default function BurstPage() {
     try {
       const res = await fetch("/api/ai-burst", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...getAppHeaders() },
         body: JSON.stringify({ topic, area, lang }),
       });
       const data = await res.json();
@@ -67,9 +67,10 @@ export default function BurstPage() {
 
   async function createAll() {
     if (!avatarId || !variants.length) return;
-    setVariants((prev) => prev.map((v) => ({ ...v, vidStatus: "pending" })));
+    setVariants((prev) => prev.map((v) => v.vidStatus === "done" ? v : { ...v, vidStatus: "pending" }));
 
     await Promise.all(variants.map(async (variant, i) => {
+      if (variant.vidStatus === "done") return;
       try {
         setVariant(i, { vidStatus: "generating" });
         const res = await fetch("/api/generate", {

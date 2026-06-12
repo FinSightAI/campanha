@@ -160,6 +160,7 @@ export default function CalendarPage() {
       {/* Week navigation */}
       <div className="flex items-center gap-4 mb-6">
         <button
+          aria-label={lang === "pt" ? "Semana anterior" : lang === "en" ? "Previous week" : "שבוע קודם"}
           onClick={() => { const a = new Date(weekAnchor); a.setDate(a.getDate() - 7); setWeekAnchor(a); }}
           className="px-3 py-1.5 rounded-lg text-sm font-bold transition-opacity hover:opacity-70"
           style={{ background: "var(--card)", border: "1px solid var(--border)", color: "var(--muted)" }}
@@ -168,6 +169,7 @@ export default function CalendarPage() {
         </button>
         <span className="text-sm font-semibold" style={{ color: "var(--text)" }}>{weekLabel}</span>
         <button
+          aria-label={lang === "pt" ? "Próxima semana" : lang === "en" ? "Next week" : "שבוע הבא"}
           onClick={() => { const a = new Date(weekAnchor); a.setDate(a.getDate() + 7); setWeekAnchor(a); }}
           className="px-3 py-1.5 rounded-lg text-sm font-bold transition-opacity hover:opacity-70"
           style={{ background: "var(--card)", border: "1px solid var(--border)", color: "var(--muted)" }}

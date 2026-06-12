@@ -1,9 +1,15 @@
-// Reads the per-client D-ID key from localStorage and returns it as a header.
-// Falls back to the server-side env var when not set.
-// Strips "Basic " prefix so routes can safely prepend it without doubling.
 export function getDIDHeaders(): Record<string, string> {
   if (typeof window === "undefined") return {};
-  const key = localStorage.getItem("campanha_did_key");
-  if (!key) return {};
-  return { "X-DID-Key": key.replace(/^Basic\s+/i, "") };
+  const headers: Record<string, string> = {};
+  const appKey = process.env.NEXT_PUBLIC_CAMPANHA_KEY;
+  if (appKey) headers["x-campanha-key"] = appKey;
+  const didKey = localStorage.getItem("campanha_did_key");
+  if (didKey) headers["X-DID-Key"] = didKey.replace(/^Basic\s+/i, "");
+  return headers;
+}
+
+export function getAppHeaders(): Record<string, string> {
+  if (typeof window === "undefined") return {};
+  const key = process.env.NEXT_PUBLIC_CAMPANHA_KEY;
+  return key ? { "x-campanha-key": key } : {};
 }

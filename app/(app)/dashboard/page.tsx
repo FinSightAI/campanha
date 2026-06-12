@@ -65,7 +65,7 @@ export default function Dashboard() {
             </p>
 
             {/* 3-step visual */}
-            <div className="grid grid-cols-3 gap-4 mb-6">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
               {[
                 { emoji: "🎬", label: t("avt_title"), sub: t("avt_subtitle").split(" — ")[0], active: true },
                 { emoji: "✍️", label: t("crt_title"), sub: t("crt_subtitle"), active: false },

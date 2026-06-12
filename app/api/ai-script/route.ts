@@ -37,7 +37,7 @@ Write a ${langLabel} political campaign speech about: "${topic}".${areaStr}${aud
 
   try {
     const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-preview-05-20" });
     const result = await model.generateContent(prompt);
     const text = result.response.text().trim();
     return NextResponse.json({ script: text });

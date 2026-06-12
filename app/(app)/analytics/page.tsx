@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useLanguage } from "@/lib/LanguageContext";
+import { getAppHeaders } from "@/lib/didKey";
 
 type VideoEntry = { id: string; url: string; script: string; name?: string; trackId?: string; createdAt: string };
 type StatEntry = VideoEntry & { views: number };
@@ -18,7 +19,7 @@ export default function AnalyticsPage() {
     if (!withTrack.length) { setLoading(false); return; }
 
     const ids = withTrack.map((v) => v.trackId!);
-    fetch(`/api/track?ids=${ids.join(",")}`)
+    fetch(`/api/track?ids=${ids.join(",")}`, { headers: getAppHeaders() })
       .then((r) => r.json())
       .then((data) => {
         const stats: Record<string, number> = data.stats || {};
