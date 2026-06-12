@@ -6,7 +6,6 @@ import Link from "next/link";
 import { useLanguage } from "@/lib/LanguageContext";
 import { scriptToVTT } from "@/lib/subtitles";
 import { getDIDHeaders } from "@/lib/didKey";
-import type { Lang } from "@/lib/translations";
 
 type VideoStatus = "idle" | "generating" | "done" | "error";
 type Tone = "formal" | "warm" | "urgent" | "chat";
@@ -75,7 +74,6 @@ function CreatePageInner() {
   const [status, setStatus] = useState<VideoStatus>("idle");
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [error, setError] = useState("");
-  const [copied, setCopied] = useState(false);
   const [copiedWA, setCopiedWA] = useState(false);
 
   // UI toggles
@@ -110,10 +108,7 @@ function CreatePageInner() {
   // Draft
   const [showDraftBanner, setShowDraftBanner] = useState(false);
 
-  // Subtitles
   const [subtitlesOn, setSubtitlesOn] = useState(true);
-
-  // Subtitles
   const [vttUrl, setVttUrl] = useState<string | null>(null);
   const prevVttUrl = useRef<string | null>(null);
 
@@ -133,6 +128,27 @@ function CreatePageInner() {
     if (draft && draft.length > 10 && !topic) setShowDraftBanner(true);
   }, [searchParams]);
 
+  async function createTrackingLink(url: string) {
+    setTrackCreating(true);
+    try {
+      const res = await fetch("/api/track", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ videoUrl: url }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setTrackId(data.id);
+        try {
+          const vids = JSON.parse(localStorage.getItem("campanha_videos") || "[]");
+          if (vids[0] && !vids[0].trackId) { vids[0].trackId = data.id; localStorage.setItem("campanha_videos", JSON.stringify(vids)); }
+        } catch { /* ignore */ }
+      }
+    } catch { /* silent fail */ } finally {
+      setTrackCreating(false);
+    }
+  }
+
   useEffect(() => {
     if (status === "done" && videoUrl && script) {
       if (prevVttUrl.current) URL.revokeObjectURL(prevVttUrl.current);
@@ -146,28 +162,6 @@ function CreatePageInner() {
       setVttUrl(null);
     }
   }, [status, videoUrl, script]);
-
-  async function createTrackingLink(url: string) {
-    setTrackCreating(true);
-    try {
-      const res = await fetch("/api/track", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ videoUrl: url }),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setTrackId(data.id);
-        // Persist trackId on the most recent video entry
-        try {
-          const vids = JSON.parse(localStorage.getItem("campanha_videos") || "[]");
-          if (vids[0] && !vids[0].trackId) { vids[0].trackId = data.id; localStorage.setItem("campanha_videos", JSON.stringify(vids)); }
-        } catch { /* ignore */ }
-      }
-    } catch { /* silent fail */ } finally {
-      setTrackCreating(false);
-    }
-  }
 
   async function writeWithAI() {
     if (!aiTopic.trim()) return;
@@ -287,15 +281,8 @@ function CreatePageInner() {
       try { await navigator.share({ text, url }); return; } catch { /* fallback */ }
     }
     await navigator.clipboard.writeText(url);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  }
-
-  async function copyLink() {
-    if (!videoUrl) return;
-    await navigator.clipboard.writeText(videoUrl);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    setCopiedTrack(true);
+    setTimeout(() => setCopiedTrack(false), 2000);
   }
 
   async function copyWA() {

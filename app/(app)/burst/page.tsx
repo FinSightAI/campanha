@@ -24,7 +24,6 @@ export default function BurstPage() {
   const [writing, setWriting] = useState(false);
   const [writeError, setWriteError] = useState("");
   const [variants, setVariants] = useState<Variant[]>([]);
-  const [creating, setCreating] = useState(false);
   const [copied, setCopied] = useState<number | null>(null);
 
   useEffect(() => {
@@ -62,7 +61,6 @@ export default function BurstPage() {
 
   async function createAll() {
     if (!avatarId || !variants.length) return;
-    setCreating(true);
     setVariants((prev) => prev.map((v) => ({ ...v, vidStatus: "pending" })));
 
     await Promise.all(variants.map(async (variant, i) => {
@@ -80,8 +78,6 @@ export default function BurstPage() {
         setVariant(i, { vidStatus: "error", vidError: e instanceof Error ? e.message : t("err_unknown") });
       }
     }));
-
-    setCreating(false);
   }
 
   function pollOne(i: number, id: string, script: string) {

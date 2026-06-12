@@ -233,8 +233,6 @@ export default function AvatarPage() {
   const [consentText, setConsentText] = useState("");
   const [consentVideoUrl, setConsentVideoUrl] = useState("");
   const [trainingVideoUrl, setTrainingVideoUrl] = useState("");
-  const [avatarId, setAvatarId] = useState("");
-  const [voiceId, setVoiceId] = useState("");
   const [thumbnailUrl, setThumbnailUrl] = useState("");
   const [error, setError] = useState("");
   // Toggle between in-browser recorder and URL upload
@@ -244,7 +242,7 @@ export default function AvatarPage() {
     const id = localStorage.getItem("campanha_avatar_id");
     const name = localStorage.getItem("campanha_avatar_name");
     const thumb = localStorage.getItem("campanha_avatar_thumbnail");
-    if (id) { setAvatarId(id); setAvatarName(name || ""); setThumbnailUrl(thumb || ""); setStep("done"); }
+    if (id) { setAvatarName(name || ""); setThumbnailUrl(thumb || ""); setStep("done"); }
   }, []);
 
   async function startConsent() {
@@ -339,8 +337,6 @@ export default function AvatarPage() {
           localStorage.setItem("campanha_avatar_name", avatarName);
           localStorage.setItem("campanha_avatar_voice_id", data.voiceId || "");
           localStorage.setItem("campanha_avatar_thumbnail", data.thumbnailUrl || "");
-          setAvatarId(id);
-          setVoiceId(data.voiceId || "");
           setThumbnailUrl(data.thumbnailUrl || "");
           setStep("done");
         } else if (data.status === "error") {
@@ -358,7 +354,7 @@ export default function AvatarPage() {
     localStorage.removeItem("campanha_avatar_voice_id");
     localStorage.removeItem("campanha_avatar_thumbnail");
     setStep("idle"); setAvatarName(""); setConsentId(""); setConsentText("");
-    setConsentVideoUrl(""); setTrainingVideoUrl(""); setAvatarId(""); setVoiceId(""); setThumbnailUrl(""); setError("");
+    setConsentVideoUrl(""); setTrainingVideoUrl(""); setThumbnailUrl(""); setError("");
   }
 
   const stepNumber = {
