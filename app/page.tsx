@@ -36,7 +36,14 @@ const CSS = `
   .lang-btn:hover{color:#d4af37!important}
   .feat-card{transition:transform .2s ease,border-color .2s ease}
   .feat-card:hover{transform:translateY(-4px);border-color:rgba(212,175,55,.4)!important}
+  @keyframes scanline {
+    0%{top:0}100%{top:100%}
+  }
+  .demo-scanline{animation:scanline 2.4s linear infinite;pointer-events:none}
 `;
+
+// Set to a real MP4 URL to show an actual demo video; leave empty for styled placeholder
+const DEMO_VIDEO_URL = "";
 
 const CONTENT: Record<string, {
   top: string; gold: string; sub: string; cta: string;
@@ -139,7 +146,48 @@ export default function Home() {
                 style={{ display: "inline-block", background: "#d4af37", color: "#000", borderRadius: 14, padding: "18px 52px", fontSize: 16, fontWeight: 700, textDecoration: "none", fontFamily: "inherit", letterSpacing: "-.02em", boxShadow: "0 4px 20px rgba(212,175,55,.2)" }}>
                 {c.cta}
               </Link>
+              <Link href="/create?ai=1" className="lang-btn"
+                style={{ fontSize: 13, color: "#555", fontWeight: 600, textDecoration: "none", fontFamily: "inherit" }}>
+                {lang === "pt" ? "✍️ Experimente o roteirista IA →" : "✍️ Try the AI scriptwriter →"}
+              </Link>
               <p style={{ fontSize: 12, color: "#2a2a2a", fontWeight: 600 }}>{c.note}</p>
+            </div>
+          </div>
+        </section>
+
+        {/* ─── DEMO ─── */}
+        <section style={{ padding: "0 24px 80px", maxWidth: 720, margin: "0 auto" }}>
+          <div style={{ position: "relative", borderRadius: 24, overflow: "hidden", border: "1px solid rgba(212,175,55,.25)", background: "#0d0d0e" }}>
+            {DEMO_VIDEO_URL ? (
+              <video src={DEMO_VIDEO_URL} autoPlay muted loop playsInline style={{ width: "100%", display: "block" }} />
+            ) : (
+              <div style={{ aspectRatio: "16/9", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 20, background: "linear-gradient(135deg,#0d0d0e,#111)" }}>
+                {/* Fake video UI */}
+                <div style={{ position: "relative", width: 96, height: 96, borderRadius: "50%", overflow: "hidden", border: "3px solid rgba(212,175,55,.5)" }}>
+                  <div style={{ width: "100%", height: "100%", background: "linear-gradient(135deg,#1a1a1a,#2a2a2a)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 40 }}>👤</div>
+                  <div className="demo-scanline" style={{ position: "absolute", left: 0, right: 0, height: "30%", background: "linear-gradient(transparent,rgba(212,175,55,.07),transparent)" }} />
+                </div>
+                <div style={{ textAlign: "center" }}>
+                  <p style={{ color: "#d4af37", fontWeight: 700, fontSize: 15, marginBottom: 6 }}>
+                    {lang === "pt" ? "\"Quero falar com você sobre habitação…\"" : "\"I want to talk to you about housing…\""}
+                  </p>
+                  <p style={{ color: "#333", fontSize: 12 }}>
+                    {lang === "pt" ? "Candidato · 45 seg · MP4 · Gerado por IA" : "Candidate · 45 sec · MP4 · AI-generated"}
+                  </p>
+                </div>
+                <div style={{ display: "flex", gap: 8, fontSize: 11, color: "#2a2a2a", fontWeight: 600 }}>
+                  <span style={{ padding: "4px 10px", borderRadius: 20, border: "1px solid #1a1a1a" }}>WhatsApp</span>
+                  <span style={{ padding: "4px 10px", borderRadius: 20, border: "1px solid #1a1a1a" }}>Instagram</span>
+                  <span style={{ padding: "4px 10px", borderRadius: 20, border: "1px solid #1a1a1a" }}>Telegram</span>
+                </div>
+                <p style={{ position: "absolute", bottom: 16, right: 20, fontSize: 11, color: "#222" }}>
+                  {lang === "pt" ? "Adicione seu vídeo demo aqui (DEMO_VIDEO_URL)" : "Add your demo video here (DEMO_VIDEO_URL)"}
+                </p>
+              </div>
+            )}
+            {/* Overlay badge */}
+            <div style={{ position: "absolute", top: 16, left: 16, background: "rgba(0,0,0,.75)", backdropFilter: "blur(8px)", borderRadius: 8, padding: "4px 10px", fontSize: 11, color: "#d4af37", fontWeight: 700 }}>
+              {lang === "pt" ? "Resultado real — gerado em 60 seg" : "Real output — generated in 60 sec"}
             </div>
           </div>
         </section>
@@ -178,7 +226,7 @@ export default function Home() {
 
           {/* Final CTA */}
           <div style={{ textAlign: "center", marginTop: 72 }}>
-            <Link href="/dashboard" className="cta-btn"
+            <Link href="/avatar" className="cta-btn"
               style={{ display: "inline-block", background: "#d4af37", color: "#000", borderRadius: 14, padding: "16px 44px", fontSize: 15, fontWeight: 700, textDecoration: "none", fontFamily: "inherit" }}>
               {c.cta}
             </Link>

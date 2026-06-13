@@ -115,6 +115,8 @@ function CreatePageInner() {
   const [subtitlesOn, setSubtitlesOn] = useState(true);
   const [vttUrl, setVttUrl] = useState<string | null>(null);
   const prevVttUrl = useRef<string | null>(null);
+  const [isFirstVideo, setIsFirstVideo] = useState(false);
+  const [showConfetti, setShowConfetti] = useState(false);
 
   useEffect(() => {
     setAvatarId(localStorage.getItem("campanha_avatar_id"));
@@ -125,6 +127,7 @@ function CreatePageInner() {
     const topic = searchParams.get("topic") || "";
     const audience = searchParams.get("audience") || "";
     if (topic) { setAiTopic(topic); setAiAudience(audience); setShowAI(true); }
+    else if (searchParams.get("ai")) setShowAI(true);
     // Load library
     try { setSavedScripts(JSON.parse(localStorage.getItem(LIB_KEY) || "[]")); } catch { /* ignore */ }
     // Check for saved draft
@@ -273,10 +276,16 @@ function CreatePageInner() {
   function saveVideo(id: string, url: string, text: string) {
     let videos: unknown[] = [];
     try { videos = JSON.parse(localStorage.getItem("campanha_videos") || "[]"); } catch { videos = []; }
+    const isFirst = videos.length === 0;
     const name = text.trim().split(/\s+/).slice(0, 6).join(" ");
     videos.unshift({ id, url, script: text.substring(0, 80), name, createdAt: new Date().toISOString() });
     localStorage.setItem("campanha_videos", JSON.stringify((videos as unknown[]).slice(0, 100)));
     localStorage.removeItem(DRAFT_KEY);
+    if (isFirst) {
+      setIsFirstVideo(true);
+      setShowConfetti(true);
+      setTimeout(() => setShowConfetti(false), 4500);
+    }
   }
 
   function reset() { setStatus("idle"); setVideoUrl(null); setError(""); setVttUrl(null); setTrackId(null); setReview(null); }
@@ -326,6 +335,22 @@ function CreatePageInner() {
 
   return (
     <div className="p-8 max-w-2xl">
+      {/* Confetti overlay */}
+      {showConfetti && (
+        <div style={{ position: "fixed", inset: 0, pointerEvents: "none", zIndex: 200, overflow: "hidden" }}>
+          <style>{`@keyframes cf{0%{transform:translateY(-20px) rotate(0deg);opacity:1}100%{transform:translateY(105vh) rotate(720deg);opacity:0}}`}</style>
+          {Array.from({ length: 48 }, (_, i) => (
+            <div key={i} style={{
+              position: "absolute", left: `${(i * 7 + 11) % 100}%`, top: -20,
+              width: 6 + (i % 4) * 3, height: 6 + (i % 4) * 3,
+              background: ["#d4af37", "#f0c040", "#fff", "#ffd700", "#c9a227", "#ffe066"][i % 6],
+              borderRadius: i % 3 === 0 ? "50%" : 2,
+              animation: `cf ${1.8 + (i % 5) * 0.4}s ${(i % 12) * 0.12}s ease-in forwards`,
+            }} />
+          ))}
+        </div>
+      )}
+
       <h1 className="text-2xl font-bold mb-1" style={{ color: "var(--text)" }}>{t("crt_title")}</h1>
       <p className="text-sm mb-8" style={{ color: "var(--muted)" }}>{t("crt_subtitle")}</p>
 
@@ -617,9 +642,17 @@ function CreatePageInner() {
       {status === "done" && videoUrl && (
         <div className="mt-6">
           <div className="rounded-xl p-5 mb-4 text-center" style={{ background: "linear-gradient(135deg,rgba(212,175,55,.13),rgba(212,175,55,.04))", border: "1px solid rgba(212,175,55,.4)" }}>
-            <div className="text-4xl mb-2">🎉</div>
-            <p className="text-lg font-bold mb-1" style={{ color: "var(--gold)" }}>{t("crt_done_title")}</p>
-            <p className="text-sm" style={{ color: "var(--muted)" }}>{t("crt_done_sub")}</p>
+            <div className="text-4xl mb-2">{isFirstVideo ? "🏆" : "🎉"}</div>
+            <p className="text-lg font-bold mb-1" style={{ color: "var(--gold)" }}>
+              {isFirstVideo
+                ? (lang === "pt" ? "Parabéns! Primeiro vídeo criado!" : lang === "en" ? "Congratulations! First video!" : "מזל טוב! הסרטון הראשון!")
+                : t("crt_done_title")}
+            </p>
+            <p className="text-sm" style={{ color: "var(--muted)" }}>
+              {isFirstVideo
+                ? (lang === "pt" ? "Compartilhe agora — cada eleitor que assistir conta! 📲" : lang === "en" ? "Share it now — every voter who watches counts! 📲" : "שתף עכשיו — כל בוחר שיצפה חשוב! 📲")
+                : t("crt_done_sub")}
+            </p>
           </div>
 
           <div className="rounded-xl overflow-hidden mb-2" style={{ border: "1px solid var(--border)" }}>

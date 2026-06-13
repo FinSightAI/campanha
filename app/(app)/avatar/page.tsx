@@ -348,6 +348,15 @@ export default function AvatarPage() {
           localStorage.setItem("campanha_avatar_thumbnail", data.thumbnailUrl || "");
           setThumbnailUrl(data.thumbnailUrl || "");
           setStep("done");
+          // Push notification
+          if (typeof Notification !== "undefined" && Notification.permission === "granted" && navigator.serviceWorker?.controller) {
+            navigator.serviceWorker.controller.postMessage({
+              type: "NOTIFY",
+              title: lang === "pt" ? "🎬 Seu avatar está pronto!" : lang === "en" ? "🎬 Your avatar is ready!" : "🎬 האוואטר שלך מוכן!",
+              body: lang === "pt" ? "Crie seu primeiro vídeo agora." : lang === "en" ? "Create your first video now." : "צור את הסרטון הראשון עכשיו.",
+              url: "/create",
+            });
+          }
         }
       } catch { /* keep polling */ }
     }, 8000);
@@ -563,6 +572,9 @@ export default function AvatarPage() {
             <div className="w-full py-4 rounded-xl text-center text-sm" style={{ background: "var(--card)", border: "1px solid var(--border)" }}>
               <span className="animate-pulse" style={{ color: "var(--gold)" }}>{t("avt_training_progress")}</span>
               <p className="text-xs mt-1" style={{ color: "var(--muted)" }}>{t("avt_training_wait")}</p>
+              <p className="text-xs mt-3 px-4 py-2 rounded-lg mx-4 font-medium" style={{ background: "rgba(212,175,55,.08)", color: "var(--gold)" }}>
+                ⏱ {lang === "pt" ? "Geralmente fica pronto em 10–15 min. Pode fechar o app e voltar depois — você receberá uma notificação." : lang === "en" ? "Usually ready in 10–15 min. You can close the app and come back — you'll get a notification." : "בדרך כלל מוכן תוך 10–15 דקות. ניתן לסגור ולחזור — תקבל התראה."}
+              </p>
             </div>
           )}
         </div>

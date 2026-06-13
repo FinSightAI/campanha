@@ -115,7 +115,7 @@ export default function Dashboard() {
             </div>
 
             {/* CTA */}
-            <div className="ob-cta">
+            <div className="ob-cta space-y-3">
               <Link
                 href="/avatar"
                 className="dash-card flex items-center gap-4 rounded-xl p-5"
@@ -127,6 +127,22 @@ export default function Dashboard() {
                   <p className="text-xs opacity-70">{t("dash_setup_hint")}</p>
                 </div>
                 <span className="text-lg font-bold">→</span>
+              </Link>
+              <Link
+                href="/create?ai=1"
+                className="dash-card flex items-center gap-4 rounded-xl p-4"
+                style={{ background: "var(--card)", border: "1px solid var(--border)", color: "var(--text)" }}
+              >
+                <span className="text-xl">✍️</span>
+                <div className="flex-1">
+                  <p className="font-semibold text-sm">
+                    {lang === "pt" ? "Experimente o roteirista IA primeiro" : lang === "en" ? "Try the AI scriptwriter first" : "נסה קודם את כותב הנאומים"}
+                  </p>
+                  <p className="text-xs" style={{ color: "var(--muted)" }}>
+                    {lang === "pt" ? "Sem avatar — veja a qualidade dos roteiros" : lang === "en" ? "No avatar needed — see script quality" : "ללא אוואטר — ראה את איכות הנאומים"}
+                  </p>
+                </div>
+                <span className="text-sm font-bold" style={{ color: "var(--muted)" }}>→</span>
               </Link>
             </div>
           </>
