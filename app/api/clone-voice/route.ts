@@ -25,14 +25,15 @@ export async function POST(req: NextRequest) {
   }
   let parsed: URL;
   try { parsed = new URL(audioUrl); } catch { return Response.json({ error: "Invalid audioUrl" }, { status: 400 }); }
-  if (parsed.protocol !== "https:") {
+  // Only fetch from our own Blob store (the upload destination) — prevents SSRF.
+  if (parsed.protocol !== "https:" || !/\.blob\.vercel-storage\.com$/.test(parsed.hostname)) {
     return Response.json({ error: "Invalid audioUrl" }, { status: 400 });
   }
 
   // Pull the uploaded sample and forward it to ElevenLabs as multipart.
   let audioBlob: Blob;
   try {
-    const r = await fetch(parsed.href);
+    const r = await fetch(parsed.href, { signal: AbortSignal.timeout(30000) });
     if (!r.ok) throw new Error("fetch failed");
     audioBlob = await r.blob();
     if (audioBlob.size > 25 * 1024 * 1024) {

@@ -78,7 +78,7 @@ export default async function WatchPage({ params }: { params: Promise<{ id: stri
         </div>
 
         <div style={{ position: "relative", borderRadius: 16, overflow: "hidden", background: "#000", border: "1px solid #252538" }}>
-          <video src={src} controls playsInline autoPlay style={{ width: "100%", display: "block" }} />
+          <video src={src} controls playsInline autoPlay style={{ width: "100%", maxHeight: "70vh", display: "block", margin: "0 auto" }} />
           {/* Watermark burned over the player, visible during playback */}
           <div
             aria-hidden

@@ -90,9 +90,10 @@ export default function SettingsPage() {
       const json = await res.json();
       if (!res.ok) throw new Error();
       const data: Record<string, string | null> = json.data;
+      // Only overwrite keys present in the payload; never wipe local keys that
+      // weren't in this snapshot (that silently destroyed scripts/profile).
       SYNC_KEYS.forEach((k) => {
         if (data[k] !== undefined && data[k] !== null) localStorage.setItem(k, data[k]!);
-        else localStorage.removeItem(k);
       });
       setLoadState("success");
       reloadTimerRef.current = setTimeout(() => window.location.reload(), 1200);

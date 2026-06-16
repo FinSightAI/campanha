@@ -13,20 +13,26 @@ export async function POST(req: NextRequest) {
   if (!rateLimit(ip, 20, 60)) return NextResponse.json({ error: "Too many requests" }, { status: 429 });
 
   const { topic, area, lang, personalContext } = await req.json();
-  if (!topic) return NextResponse.json({ error: "Missing topic" }, { status: 400 });
+  if (typeof topic !== "string" || !topic.trim()) {
+    return NextResponse.json({ error: "Missing topic" }, { status: 400 });
+  }
+  const str = (v: unknown, max: number) => (typeof v === "string" ? v.slice(0, max) : "");
+  const topicSafe = topic.slice(0, 300);
+  const areaSafe = str(area, 100);
+  const personalContextSafe = str(personalContext, 2000);
 
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) return NextResponse.json({ error: "Serviço de IA indisponível. Contate o suporte." }, { status: 503 });
 
   const langLabel = lang === "he" ? "Hebrew" : lang === "pt" ? "Brazilian Portuguese" : "English";
-  const areaStr = area ? ` for ${area}` : "";
+  const areaStr = areaSafe ? ` for ${areaSafe}` : "";
   const audiences = AUDIENCES[lang as keyof typeof AUDIENCES] || AUDIENCES.en;
 
-  const contextStr = personalContext
-    ? `\n\nIMPORTANT — all speeches must sound authentically like THIS specific candidate:\n${personalContext}\nAdapt vocabulary, references, and style to match the candidate's profile above.`
+  const contextStr = personalContextSafe
+    ? `\n\nIMPORTANT — all speeches must sound authentically like THIS specific candidate:\n${personalContextSafe}\nAdapt vocabulary, references, and style to match the candidate's profile above.`
     : "";
 
-  const prompt = `You are a political campaign speechwriter. Write 5 different campaign speeches about "${topic}"${areaStr} in ${langLabel}.${contextStr}
+  const prompt = `You are a political campaign speechwriter. Write 5 different campaign speeches about "${topicSafe}"${areaStr} in ${langLabel}.${contextStr}
 
 Each speech must be adapted for a specific audience:
 1. ${audiences[0]}
@@ -51,11 +57,13 @@ Return ONLY valid JSON with this exact structure:
       generationConfig: { responseMimeType: "application/json" },
     });
     const result = await model.generateContent(prompt);
-    const json = JSON.parse(result.response.text());
+    const text = result.response.text().trim().replace(/```json\n?|\n?```/g, "").trim();
+    const json = JSON.parse(text);
     return NextResponse.json(json);
   } catch (e) {
+    console.error("[ai-burst]", e);
     return NextResponse.json(
-      { error: e instanceof Error ? e.message : "AI error" },
+      { error: "Erro ao gerar os textos. Tente novamente." },
       { status: 500 }
     );
   }

@@ -10,6 +10,9 @@ export async function POST(
   const { id } = await params;
   const { name, sourceUrl } = await req.json();
 
+  if (typeof name !== "string" || !name.trim()) {
+    return Response.json({ error: "Missing parameters" }, { status: 400 });
+  }
   try { const u = new URL(sourceUrl || ""); if (u.protocol !== "https:") throw new Error(); } catch {
     return Response.json({ error: "Invalid sourceUrl" }, { status: 400 });
   }
@@ -20,11 +23,14 @@ export async function POST(
       "Content-Type": "application/json",
       Authorization: `Basic ${apiKey}`,
     },
-    body: JSON.stringify({ name, source_url: sourceUrl }),
+    body: JSON.stringify({ name: name.slice(0, 100), source_url: sourceUrl }),
   });
 
   const data = await res.json();
-  if (!res.ok) return Response.json({ error: data.message || "שגיאה" }, { status: res.status });
+  if (!res.ok) {
+    console.error("[submit-consent]", res.status, data?.message);
+    return Response.json({ error: "Erro ao enviar. Tente novamente." }, { status: res.status });
+  }
 
   return Response.json({ status: data.status });
 }

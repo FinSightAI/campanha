@@ -10,6 +10,9 @@ export async function POST(req: NextRequest) {
 
   const { name, consentId, sourceUrl } = await req.json();
 
+  if (typeof name !== "string" || typeof consentId !== "string" || !name.trim() || !consentId.trim()) {
+    return Response.json({ error: "Missing parameters" }, { status: 400 });
+  }
   try { const u = new URL(sourceUrl || ""); if (u.protocol !== "https:") throw new Error(); } catch {
     return Response.json({ error: "Invalid sourceUrl" }, { status: 400 });
   }
@@ -21,7 +24,7 @@ export async function POST(req: NextRequest) {
       Authorization: `Basic ${apiKey}`,
     },
     body: JSON.stringify({
-      name,
+      name: name.slice(0, 100),
       consent_id: consentId,
       source_url: sourceUrl,
       persist: true,
@@ -29,7 +32,10 @@ export async function POST(req: NextRequest) {
   });
 
   const data = await res.json();
-  if (!res.ok) return Response.json({ error: data.message || "שגיאה" }, { status: res.status });
+  if (!res.ok) {
+    console.error("[create-avatar]", res.status, data?.message);
+    return Response.json({ error: "Erro ao criar o avatar. Tente novamente." }, { status: res.status });
+  }
 
   return Response.json({ id: data.id, status: data.status });
 }

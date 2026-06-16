@@ -18,6 +18,7 @@ const LIB_KEY = "campanha_scripts";
 const DRAFT_KEY = "campanha_draft";
 
 function getPersonalContext(): string {
+  if (typeof window === "undefined") return "";
   const parts = [
     localStorage.getItem("campanha_avatar_name") && `Name: ${localStorage.getItem("campanha_avatar_name")}`,
     localStorage.getItem("campanha_profile_role") && `Role: ${localStorage.getItem("campanha_profile_role")}`,
@@ -615,11 +616,11 @@ function CreatePageInner() {
 
           {review && (
             <div className="mt-3 rounded-xl overflow-hidden" style={{ border: "1px solid rgba(212,175,55,.3)" }}>
-              <div className="grid grid-cols-2 gap-px" style={{ background: "var(--border)" }}>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-px" style={{ background: "var(--border)" }}>
                 <div className="p-3" style={{ background: "var(--card)" }}>
                   <p className="text-xs font-bold mb-2" style={{ color: "var(--gold)" }}>{t("crt_review_strengths")}</p>
                   <ul className="space-y-1">
-                    {review.strengths.map((s, i) => (
+                    {(review.strengths ?? []).map((s, i) => (
                       <li key={i} className="text-xs leading-relaxed" style={{ color: "var(--text)" }}>{s}</li>
                     ))}
                   </ul>
@@ -627,7 +628,7 @@ function CreatePageInner() {
                 <div className="p-3" style={{ background: "var(--card)" }}>
                   <p className="text-xs font-bold mb-2" style={{ color: "#d4af37" }}>{t("crt_review_weak")}</p>
                   <ul className="space-y-1">
-                    {review.weaknesses.map((w, i) => (
+                    {(review.weaknesses ?? []).map((w, i) => (
                       <li key={i} className="text-xs leading-relaxed" style={{ color: "var(--text)" }}>{w}</li>
                     ))}
                   </ul>
@@ -725,7 +726,10 @@ function CreatePageInner() {
           </div>
 
           <div className="rounded-xl overflow-hidden mb-2" style={{ border: "1px solid var(--border)" }}>
-            <video src={videoUrl} controls className="w-full">
+            {/* Route through the same-origin proxy so the <track> captions are
+                allowed on the otherwise cross-origin (Blob/D-ID) video. */}
+            <video src={videoUrl ? `/api/proxy-video?url=${encodeURIComponent(videoUrl)}` : undefined}
+              crossOrigin="anonymous" controls className="w-full">
               {vttUrl && subtitlesOn && <track kind="subtitles" src={vttUrl} default label={t("crt_subtitles")} />}
             </video>
           </div>

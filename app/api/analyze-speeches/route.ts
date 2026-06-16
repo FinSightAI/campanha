@@ -35,8 +35,9 @@ Write in English, regardless of the speech language. Be specific — a speechwri
     const result = await model.generateContent(prompt);
     return NextResponse.json({ analysis: result.response.text().trim() });
   } catch (e) {
+    console.error("[analyze-speeches]", e);
     return NextResponse.json(
-      { error: e instanceof Error ? e.message : "AI error" },
+      { error: "Erro ao analisar. Tente novamente." },
       { status: 500 }
     );
   }

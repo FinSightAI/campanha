@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { randomBytes } from "crypto";
 
 function genId() {
-  return randomBytes(4).toString("hex"); // 32-bit CSPRNG, 16^8 space
+  return randomBytes(8).toString("hex"); // 64-bit CSPRNG, 16 hex chars
 }
 
 export async function POST(req: Request) {

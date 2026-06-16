@@ -18,7 +18,7 @@ export async function POST(req: Request) {
           "video/mp4", "video/quicktime", "video/webm",
           "audio/mpeg", "audio/wav", "audio/mp4", "audio/x-m4a", "audio/webm", "audio/ogg",
         ],
-        maximumSizeInBytes: 500 * 1024 * 1024,
+        maximumSizeInBytes: 120 * 1024 * 1024,
       }),
       onUploadCompleted: async () => {},
     });

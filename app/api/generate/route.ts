@@ -69,8 +69,9 @@ export async function POST(req: NextRequest) {
 
   const data = await res.json();
   if (!res.ok) {
+    console.error("[generate]", res.status, data?.message || data?.error);
     return Response.json(
-      { error: data.message || data.error || "D-ID error" },
+      { error: "Erro ao gerar o vídeo. Tente novamente." },
       { status: res.status }
     );
   }

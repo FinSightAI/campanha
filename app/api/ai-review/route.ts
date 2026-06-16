@@ -7,7 +7,10 @@ export async function POST(req: NextRequest) {
   if (!rateLimit(ip, 20, 60)) return NextResponse.json({ error: "Too many requests" }, { status: 429 });
 
   const { script, lang } = await req.json();
-  if (!script) return NextResponse.json({ error: "Missing script" }, { status: 400 });
+  if (typeof script !== "string" || !script.trim()) {
+    return NextResponse.json({ error: "Missing script" }, { status: 400 });
+  }
+  const scriptSafe = script.slice(0, 6000);
 
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) return NextResponse.json({ error: "Serviço de IA indisponível. Contate o suporte." }, { status: 503 });
@@ -19,7 +22,7 @@ export async function POST(req: NextRequest) {
 
 Speech:
 """
-${script}
+${scriptSafe}
 """
 
 Respond in ${replyLang}. Return ONLY valid JSON — no markdown, no extra text:
@@ -37,6 +40,7 @@ Respond in ${replyLang}. Return ONLY valid JSON — no markdown, no extra text:
     const parsed = JSON.parse(text);
     return NextResponse.json(parsed);
   } catch (e) {
-    return NextResponse.json({ error: e instanceof Error ? e.message : "AI error" }, { status: 500 });
+    console.error("[ai-review]", e);
+    return NextResponse.json({ error: "Erro ao analisar o texto. Tente novamente." }, { status: 500 });
   }
 }

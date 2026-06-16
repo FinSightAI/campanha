@@ -5,6 +5,7 @@ export async function POST(req: NextRequest) {
   if (!apiKey) return Response.json({ error: "DID_API_KEY לא מוגדר" }, { status: 500 });
 
   const { language } = await req.json();
+  const lang = language === "english" || language === "portuguese" || language === "hebrew" ? language : "portuguese";
 
   const res = await fetch("https://api.d-id.com/consents", {
     method: "POST",
@@ -12,11 +13,14 @@ export async function POST(req: NextRequest) {
       "Content-Type": "application/json",
       Authorization: `Basic ${apiKey}`,
     },
-    body: JSON.stringify({ language: language || "hebrew" }),
+    body: JSON.stringify({ language: lang }),
   });
 
   const data = await res.json();
-  if (!res.ok) return Response.json({ error: data.message || "שגיאה" }, { status: res.status });
+  if (!res.ok) {
+    console.error("[create-consent]", res.status, data?.message);
+    return Response.json({ error: "Erro ao iniciar. Tente novamente." }, { status: res.status });
+  }
 
   return Response.json({ id: data.id, text: data.text });
 }

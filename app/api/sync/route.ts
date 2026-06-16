@@ -57,7 +57,7 @@ export async function GET(req: Request) {
 
   const { searchParams } = new URL(req.url);
   const code = searchParams.get("code")?.toUpperCase().trim();
-  if (!code || !/^[0-9A-F]{10,32}$/.test(code)) {
+  if (!code || !/^[0-9A-F]{16}$/.test(code)) {
     return NextResponse.json({ error: "Missing code" }, { status: 400 });
   }
 

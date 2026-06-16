@@ -42,8 +42,9 @@ const CSS = `
   .demo-scanline{animation:scanline 2.4s linear infinite;pointer-events:none}
 `;
 
-// Set to a real MP4 URL to show an actual demo video; leave empty for styled placeholder
-const DEMO_VIDEO_URL = "";
+// Set NEXT_PUBLIC_DEMO_VIDEO_URL to a real MP4 URL to show an actual demo video;
+// otherwise a styled placeholder is shown.
+const DEMO_VIDEO_URL = process.env.NEXT_PUBLIC_DEMO_VIDEO_URL || "";
 
 const CONTENT: Record<string, {
   top: string; gold: string; sub: string; cta: string;
@@ -181,7 +182,7 @@ export default function Home() {
                   <span style={{ padding: "4px 10px", borderRadius: 20, border: "1px solid #1a1a1a" }}>Telegram</span>
                 </div>
                 <p style={{ position: "absolute", bottom: 16, right: 20, fontSize: 11, color: "#222" }}>
-                  {lang === "pt" ? "Adicione seu vídeo demo aqui (DEMO_VIDEO_URL)" : "Add your demo video here (DEMO_VIDEO_URL)"}
+                  {lang === "pt" ? "Demonstração em breve" : lang === "en" ? "Demo coming soon" : "הדגמה בקרוב"}
                 </p>
               </div>
             )}

@@ -12,8 +12,11 @@ interface Variant {
   script: string;
   vidStatus: VidStatus;
   vidUrl?: string;
+  trackId?: string;
   vidError?: string;
 }
+
+type SavedVideo = { id: string; url: string; script: string; name: string; trackId?: string; createdAt: string };
 
 export default function BurstPage() {
   const { t, lang } = useLanguage();
@@ -25,7 +28,13 @@ export default function BurstPage() {
   const [writeError, setWriteError] = useState("");
   const [variants, setVariants] = useState<Variant[]>([]);
   const [copied, setCopied] = useState<number | null>(null);
+  const [origin, setOrigin] = useState("");
   const pollRefs = useRef<Map<number, ReturnType<typeof setInterval>>>(new Map());
+  const creatingRef = useRef(false);
+
+  // Share through the labeled /v/<id> watch page (AI-content disclosure / TSE)
+  // whenever a tracking link exists; fall back to the raw file otherwise.
+  const shareUrl = (v: Variant) => (v.trackId && origin ? `${origin}/v/${v.trackId}` : v.vidUrl || "");
 
   useEffect(() => {
     const refs = pollRefs.current;
@@ -33,9 +42,22 @@ export default function BurstPage() {
   }, []);
 
   useEffect(() => {
+    setOrigin(window.location.origin);
     setAvatarId(localStorage.getItem("campanha_avatar_id"));
     setVoiceId(localStorage.getItem("campanha_avatar_voice_id"));
   }, []);
+
+  async function createTrack(videoUrl: string): Promise<string | undefined> {
+    try {
+      const res = await fetch("/api/track", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...getAppHeaders() },
+        body: JSON.stringify({ videoUrl }),
+      });
+      const d = await res.json();
+      return res.ok ? d.id : undefined;
+    } catch { return undefined; }
+  }
 
   function setVariant(i: number, patch: Partial<Variant>) {
     setVariants((prev) => prev.map((v, idx) => idx === i ? { ...v, ...patch } : v));
@@ -62,7 +84,9 @@ export default function BurstPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
-      setVariants(data.variants.map((v: { audience: string; script: string }) => ({
+      const list = Array.isArray(data.variants) ? data.variants : [];
+      if (!list.length) throw new Error(t("err_unknown"));
+      setVariants(list.map((v: { audience: string; script: string }) => ({
         ...v,
         vidStatus: "idle",
       })));
@@ -74,25 +98,30 @@ export default function BurstPage() {
   }
 
   async function createAll() {
-    if (!avatarId || !variants.length) return;
+    if (!avatarId || !variants.length || creatingRef.current) return; // guard double-fire (double-spend)
+    creatingRef.current = true;
     setVariants((prev) => prev.map((v) => v.vidStatus === "done" ? v : { ...v, vidStatus: "pending" }));
 
-    await Promise.all(variants.map(async (variant, i) => {
-      if (variant.vidStatus === "done") return;
-      try {
-        setVariant(i, { vidStatus: "generating" });
-        const res = await fetch("/api/generate", {
-          method: "POST",
-          headers: { "Content-Type": "application/json", ...getDIDHeaders() },
-          body: JSON.stringify({ script: variant.script.trim(), avatarId, voiceId }),
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error);
-        pollOne(i, data.id, variant.script, variant.audience);
-      } catch (e: unknown) {
-        setVariant(i, { vidStatus: "error", vidError: e instanceof Error ? e.message : t("err_unknown") });
-      }
-    }));
+    try {
+      await Promise.all(variants.map(async (variant, i) => {
+        if (variant.vidStatus === "done") return;
+        try {
+          setVariant(i, { vidStatus: "generating" });
+          const res = await fetch("/api/generate", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", ...getDIDHeaders() },
+            body: JSON.stringify({ script: variant.script.trim(), avatarId, voiceId }),
+          });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error);
+          pollOne(i, data.id, variant.script, variant.audience);
+        } catch (e: unknown) {
+          setVariant(i, { vidStatus: "error", vidError: e instanceof Error ? e.message : t("err_unknown") });
+        }
+      }));
+    } finally {
+      creatingRef.current = false;
+    }
   }
 
   function pollOne(i: number, id: string, script: string, audience?: string) {
@@ -110,8 +139,10 @@ export default function BurstPage() {
         const data = await res.json();
         if (data.status === "done") {
           clearInterval(interval); pollRefs.current.delete(i);
-          setVariant(i, { vidStatus: "done", vidUrl: data.result_url });
-          saveVideo(id, data.result_url, script, audience);
+          // Create the labeled tracking link so external shares carry the AI disclosure (TSE).
+          const trackId = await createTrack(data.result_url);
+          setVariant(i, { vidStatus: "done", vidUrl: data.result_url, trackId });
+          saveVideo(id, data.result_url, script, audience, trackId);
         } else if (data.status === "error") {
           clearInterval(interval); pollRefs.current.delete(i);
           setVariant(i, { vidStatus: "error", vidError: t("err_ai") });
@@ -121,12 +152,14 @@ export default function BurstPage() {
     pollRefs.current.set(i, interval);
   }
 
-  function saveVideo(id: string, url: string, script: string, audience?: string) {
-    let videos: unknown[] = [];
+  function saveVideo(id: string, url: string, script: string, audience?: string, trackId?: string) {
+    let videos: SavedVideo[] = [];
+    // Re-read fresh and dedupe-on-id so concurrent burst saves don't drop each other.
     try { videos = JSON.parse(localStorage.getItem("campanha_videos") || "[]"); } catch { videos = []; }
+    if (videos.some((v) => v.id === id)) return;
     const name = audience || script.trim().split(/\s+/).slice(0, 6).join(" ");
-    videos.unshift({ id, url, script: script.substring(0, 80), name, createdAt: new Date().toISOString() });
-    localStorage.setItem("campanha_videos", JSON.stringify((videos as unknown[]).slice(0, 100)));
+    videos.unshift({ id, url, script: script.substring(0, 80), name, trackId, createdAt: new Date().toISOString() });
+    localStorage.setItem("campanha_videos", JSON.stringify(videos.slice(0, 100)));
   }
 
   async function copyLink(url: string, i: number) {
@@ -157,7 +190,7 @@ export default function BurstPage() {
 
       {/* Input form */}
       <div className="rounded-xl p-5 mb-6" style={{ background: "var(--card)", border: "1px solid var(--border)" }}>
-        <div className="grid grid-cols-2 gap-4 mb-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
           <div>
             <label className="text-xs font-semibold block mb-1.5" style={{ color: "var(--muted)" }}>{t("burst_topic_label")}</label>
             <input
@@ -232,24 +265,24 @@ export default function BurstPage() {
                 {v.vidStatus === "done" && v.vidUrl && (
                   <div style={{ background: "var(--card)" }}>
                     <video src={v.vidUrl} controls className="w-full" />
-                    <div className="flex gap-2 p-3">
+                    <div className="flex flex-wrap gap-2 p-3">
                       <a href={v.vidUrl} download
-                        className="flex-1 py-2 rounded-lg text-xs font-bold text-center"
+                        className="flex-1 min-w-[72px] py-2 rounded-lg text-xs font-bold text-center"
                         style={{ background: "var(--gold)", color: "#000" }}>
                         {t("crt_download")}
                       </a>
-                      <a href={`https://wa.me/?text=${encodeURIComponent(v.vidUrl)}`} target="_blank" rel="noopener noreferrer"
-                        className="flex-1 py-2 rounded-lg text-xs font-bold text-center"
+                      <a href={`https://wa.me/?text=${encodeURIComponent(shareUrl(v))}`} target="_blank" rel="noopener noreferrer"
+                        className="flex-1 min-w-[72px] py-2 rounded-lg text-xs font-bold text-center"
                         style={{ background: "#25D366", color: "#fff" }}>
                         WhatsApp
                       </a>
-                      <a href={`https://t.me/share/url?url=${encodeURIComponent(v.vidUrl)}`} target="_blank" rel="noopener noreferrer"
-                        className="flex-1 py-2 rounded-lg text-xs font-bold text-center"
+                      <a href={`https://t.me/share/url?url=${encodeURIComponent(shareUrl(v))}`} target="_blank" rel="noopener noreferrer"
+                        className="flex-1 min-w-[72px] py-2 rounded-lg text-xs font-bold text-center"
                         style={{ background: "#0088cc", color: "#fff" }}>
                         Telegram
                       </a>
-                      <button onClick={() => copyLink(v.vidUrl!, i)}
-                        className="flex-1 py-2 rounded-lg text-xs font-bold"
+                      <button onClick={() => copyLink(shareUrl(v), i)}
+                        className="flex-1 min-w-[72px] py-2 rounded-lg text-xs font-bold"
                         style={{ background: copied === i ? "var(--gold)" : "var(--border)", color: copied === i ? "#000" : "var(--text)" }}>
                         {copied === i ? t("crt_copied") : t("crt_copy_link")}
                       </button>
