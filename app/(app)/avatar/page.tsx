@@ -236,8 +236,33 @@ export default function AvatarPage() {
   const [thumbnailUrl, setThumbnailUrl] = useState("");
   const [error, setError] = useState("");
   const [useRecorder, setUseRecorder] = useState(true);
+  const [voiceCloned, setVoiceCloned] = useState(false);
+  const [cloningVoice, setCloningVoice] = useState(false);
+  const [voiceError, setVoiceError] = useState("");
+  const voiceFileRef = useRef<HTMLInputElement>(null);
   const pollConsentRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const pollAvatarRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  async function cloneVoice(file: File) {
+    setCloningVoice(true);
+    setVoiceError("");
+    try {
+      const blob = await upload(file.name, file, { access: "public", handleUploadUrl: "/api/upload" });
+      const res = await fetch("/api/clone-voice", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...getDIDHeaders() },
+        body: JSON.stringify({ audioUrl: blob.url, name: avatarName || localStorage.getItem("campanha_avatar_name") || "Campanha" }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.voiceId) throw new Error(data.error || "error");
+      localStorage.setItem("campanha_avatar_voice_id", data.voiceId);
+      setVoiceCloned(true);
+    } catch (e: unknown) {
+      setVoiceError(e instanceof Error ? e.message : "error");
+    } finally {
+      setCloningVoice(false);
+    }
+  }
 
   useEffect(() => () => {
     if (pollConsentRef.current) clearInterval(pollConsentRef.current);
@@ -249,6 +274,7 @@ export default function AvatarPage() {
     const name = localStorage.getItem("campanha_avatar_name");
     const thumb = localStorage.getItem("campanha_avatar_thumbnail");
     if (id) { setAvatarName(name || ""); setThumbnailUrl(thumb || ""); setStep("done"); }
+    setVoiceCloned(!!localStorage.getItem("campanha_avatar_voice_id"));
   }, []);
 
   async function startConsent() {
@@ -468,6 +494,44 @@ export default function AvatarPage() {
           <p className="font-bold text-base mb-1" style={{ color: "var(--gold)" }}>{t("avt_ready_title")}</p>
           <p className="text-sm mb-4" style={{ color: "var(--text)" }}>{avatarName || localStorage.getItem("campanha_avatar_name")}</p>
           <button onClick={reset} className="text-xs underline" style={{ color: "var(--muted)" }}>{t("avt_replace")}</button>
+        </div>
+      )}
+
+      {/* Voice clone — make the videos sound like the candidate himself */}
+      {step === "done" && (
+        <div className="rounded-xl p-5 mb-6 text-left" style={{ background: "var(--card)", border: `1px solid ${voiceCloned ? "var(--gold)" : "var(--border)"}` }}>
+          <p className="text-sm font-bold mb-1" style={{ color: "var(--gold)" }}>
+            🎙️ {lang === "pt" ? "A sua voz" : lang === "en" ? "Your voice" : "הקול שלך"}
+          </p>
+          {voiceCloned ? (
+            <p className="text-xs" style={{ color: "var(--muted)" }}>
+              {lang === "pt" ? "✓ Voz clonada — os vídeos usarão a sua voz." : lang === "en" ? "✓ Voice cloned — videos will use your voice." : "✓ הקול שוכפל — הסרטונים ישתמשו בקול שלך."}
+              {" "}
+              <button onClick={() => voiceFileRef.current?.click()} className="underline" style={{ color: "var(--gold)" }} disabled={cloningVoice}>
+                {lang === "pt" ? "Refazer" : lang === "en" ? "Redo" : "מחדש"}
+              </button>
+            </p>
+          ) : (
+            <>
+              <p className="text-xs mb-3" style={{ color: "var(--muted)" }}>
+                {lang === "pt"
+                  ? "Envie 1–2 min de áudio limpo seu falando, para que os vídeos soem exatamente como você."
+                  : lang === "en"
+                  ? "Upload 1–2 min of clean audio of you speaking, so the videos sound exactly like you."
+                  : "העלה 1–2 דקות אודיו נקי שלך מדבר, כדי שהסרטונים יישמעו בדיוק כמוך."}
+              </p>
+              <button onClick={() => voiceFileRef.current?.click()} disabled={cloningVoice}
+                className="w-full py-2.5 rounded-lg text-sm font-bold disabled:opacity-40"
+                style={{ background: "var(--gold)", color: "#000" }}>
+                {cloningVoice
+                  ? (lang === "pt" ? "Clonando…" : lang === "en" ? "Cloning…" : "משכפל…")
+                  : (lang === "pt" ? "Clonar a minha voz" : lang === "en" ? "Clone my voice" : "שכפל את הקול שלי")}
+              </button>
+            </>
+          )}
+          <input ref={voiceFileRef} type="file" accept="audio/*" className="hidden"
+            onChange={(e) => { const f = e.target.files?.[0]; if (f) cloneVoice(f); }} />
+          {voiceError && <p className="text-xs mt-2" style={{ color: "#e55" }}>{voiceError}</p>}
         </div>
       )}
 

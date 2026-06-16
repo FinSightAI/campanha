@@ -14,7 +14,10 @@ export async function POST(req: Request) {
       body,
       request: req,
       onBeforeGenerateToken: async () => ({
-        allowedContentTypes: ["video/mp4", "video/quicktime", "video/webm"],
+        allowedContentTypes: [
+          "video/mp4", "video/quicktime", "video/webm",
+          "audio/mpeg", "audio/wav", "audio/mp4", "audio/x-m4a", "audio/webm", "audio/ogg",
+        ],
         maximumSizeInBytes: 500 * 1024 * 1024,
       }),
       onUploadCompleted: async () => {},

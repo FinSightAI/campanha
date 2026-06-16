@@ -61,6 +61,8 @@ Set these in `.env.local` (local) and in the Vercel dashboard (production):
 | `CLERK_SECRET_KEY` | Clerk secret key — read implicitly by the Clerk SDK |
 | `NEXT_PUBLIC_CAMPANHA_KEY` | Optional API gate — if set, requests to `/api/*` must send a matching `x-campanha-key` header (see `middleware.ts`) |
 | `CAMPANHA_MONTHLY_VIDEO_LIMIT` | Monthly video-generation cap per D-ID account (default `15`; set `0` for unlimited). Enforced in `/api/generate`, usage at `GET /api/quota`. See `lib/quota.ts` |
+| `CAMPANHA_DEFAULT_VOICE` | Fallback Microsoft pt-BR TTS voice when no cloned voice exists (default `pt-BR-AntonioNeural`, male) |
+| `ELEVENLABS_API_KEY` | ElevenLabs key for Instant Voice Cloning (`/api/clone-voice`). The **same** ElevenLabs account must also be connected inside D-ID (Studio → Integrations, requires D-ID Pro+) so the cloned `voice_id` is usable via the elevenlabs provider in `/api/generate` |
 
 ## Project structure
 
