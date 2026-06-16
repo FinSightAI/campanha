@@ -10,9 +10,10 @@ AI-powered campaign video platform. Generate talking-avatar campaign videos from
 - **Avatar videos** — Create talking-avatar videos through the [D-ID](https://www.d-id.com) API (avatars, consents, scenes/clips), with status polling.
 - **Speech analysis** — Analyze speeches/transcripts to extract campaign-ready content.
 - **Asset uploads** — Store media via Vercel Blob.
-- **Sharing & tracking** — Short share links (`/v/[id]`) with view tracking and analytics.
+- **Sharing & tracking** — Short links resolve to a labeled `/v/[id]` watch page with view tracking and analytics.
 - **Workspace** — Dashboard, create, videos library, calendar, burst, analytics, profile, settings, and guide screens.
 - **Multilingual** — UI translations for Portuguese, English, Spanish, and Hebrew (landing currently exposes PT/EN).
+- **AI-content labeling** — Synthetic content is labeled per Brazilian electoral law (see [Legal / TSE compliance](#legal--tse-compliance)).
 
 ## Tech stack
 
@@ -87,6 +88,37 @@ next.config.ts          # Security headers + CSP
 ## Security
 
 `next.config.ts` sets strict headers (`X-Frame-Options: DENY`, `nosniff`, HSTS, a CSP, and a locked-down `Permissions-Policy`). API routes can be gated behind `NEXT_PUBLIC_CAMPANHA_KEY` via `middleware.ts`, and rate limiting lives in `lib/rateLimit.ts`.
+
+## Legal / TSE compliance
+
+The app produces **synthetic AI-generated** campaign videos for Brazilian electoral
+use. Brazilian electoral law — **TSE Resolução nº 23.610/2019** (updated for the
+2024/2026 elections) — requires synthetic content to be labeled **explicitly,
+prominently, and accessibly**, disclosing that it was AI-generated **and which
+technology** produced it. Failing to do so creates legal exposure for the candidate
+and the platform.
+
+How the app meets this:
+
+- **Labeled watch page** — `app/v/[id]/page.tsx` embeds each shared video with a
+  prominent, always-visible AI-content banner + the technology name (D-ID), in
+  pt-BR. (It is **not** a bare redirect to the raw file — that would expose
+  unlabeled content.)
+- **Shares route through the watch page** — WhatsApp / Facebook / native / copy
+  share the `/v/<trackId>` URL, not the raw video, whenever a tracking link exists.
+- **Legal acknowledgment** — `app/(app)/LegalNotice.tsx` (mounted in the app
+  layout) shows a one-time consent (`campanha_legal_ack` in `localStorage`) plus a
+  persistent disclosure footer covering the user's labeling responsibility and the
+  72h-before / 24h-after publishing ban.
+- **In-app label** — an AI badge on video cards; disclosure strings live in
+  `lib/translations.ts` (`ai_label`, `legal_ack_*`, `legal_footer`) across all
+  languages. **The pt-BR text is legally operative — do not casually reword it.**
+
+> **Known gap (intentional):** the label is not yet burned into the downloadable
+> video file (client-side canvas/MediaRecorder fails on iOS Safari; a baked-in
+> watermark needs server-side ffmpeg). Until then the acknowledgment makes the user
+> responsible for keeping the label when re-publishing elsewhere. See
+> [`AGENTS.md`](./AGENTS.md) for the full constraints when editing this code.
 
 ## Deploy
 
