@@ -12,9 +12,11 @@ export async function POST(req: NextRequest) {
     return Response.json({ error: "Too many requests" }, { status: 429 });
   }
 
-  const elKey = process.env.ELEVENLABS_API_KEY;
+  // Prefer the user's own ElevenLabs key (so cloning is billed to their account);
+  // fall back to the server key if configured.
+  const elKey = req.headers.get("x-elevenlabs-key")?.trim() || process.env.ELEVENLABS_API_KEY;
   if (!elKey) {
-    return Response.json({ error: "Clonagem de voz não configurada. Contate o suporte." }, { status: 503 });
+    return Response.json({ error: "Clonagem de voz não configurada. Adicione sua chave ElevenLabs nas Configurações." }, { status: 503 });
   }
 
   const { audioUrl, name } = await req.json();

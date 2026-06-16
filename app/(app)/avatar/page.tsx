@@ -250,7 +250,11 @@ export default function AvatarPage() {
       const blob = await upload(file.name, file, { access: "public", handleUploadUrl: "/api/upload" });
       const res = await fetch("/api/clone-voice", {
         method: "POST",
-        headers: { "Content-Type": "application/json", ...getDIDHeaders() },
+        headers: {
+          "Content-Type": "application/json",
+          ...getDIDHeaders(),
+          "x-elevenlabs-key": localStorage.getItem("campanha_el_key") || "",
+        },
         body: JSON.stringify({ audioUrl: blob.url, name: avatarName || localStorage.getItem("campanha_avatar_name") || "Campanha" }),
       });
       const data = await res.json();
