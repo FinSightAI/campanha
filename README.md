@@ -90,4 +90,10 @@ next.config.ts          # Security headers + CSP
 
 ## Deploy
 
-Deployed on [Vercel](https://vercel.com). Push to the main branch (or `vercel --prod`) to ship. Make sure all environment variables above are configured in the Vercel project settings.
+Deployed on [Vercel](https://vercel.com). Deploys are **manual** (no GitHub auto-deploy is configured) — ship with:
+
+```bash
+vercel --prod --scope finsightai-4755s-projects --yes
+```
+
+Make sure all environment variables above are configured in the Vercel project settings.
