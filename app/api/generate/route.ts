@@ -2,6 +2,11 @@ import { NextRequest } from "next/server";
 import { rateLimit } from "@/lib/rateLimit";
 import { checkVideoQuota, incrementVideoQuota } from "@/lib/quota";
 
+// Microsoft pt-BR TTS voices usable as a fallback when the avatar has no cloned
+// (ElevenLabs) voice. Default is MALE — a silent female default reads as broken.
+const ALLOWED_MS_VOICES = ["pt-BR-AntonioNeural", "pt-BR-FranciscaNeural", "pt-BR-MacerioMultilingualNeural"];
+const DEFAULT_MS_VOICE = process.env.CAMPANHA_DEFAULT_VOICE || "pt-BR-AntonioNeural";
+
 export async function POST(req: NextRequest) {
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0] ?? "unknown";
   if (!rateLimit(ip, 5, 60)) return Response.json({ error: "Too many requests" }, { status: 429 });
@@ -9,7 +14,7 @@ export async function POST(req: NextRequest) {
   const apiKey = (req.headers.get("x-did-key") || process.env.DID_API_KEY || "").replace(/^Basic\s+/i, "");
   if (!apiKey) return Response.json({ error: "DID_API_KEY not configured" }, { status: 500 });
 
-  const { script, avatarId, voiceId, bgUrl } = await req.json();
+  const { script, avatarId, voiceId, bgUrl, msVoice } = await req.json();
 
   if (typeof script !== "string" || typeof avatarId !== "string" || !script.trim() || !avatarId.trim()) {
     return Response.json({ error: "Missing parameters" }, { status: 400 });
@@ -42,7 +47,7 @@ export async function POST(req: NextRequest) {
       input: script,
       provider: voiceId
         ? { type: "elevenlabs", voice_id: voiceId }
-        : { type: "microsoft", voice_id: "pt-BR-FranciscaNeural" },
+        : { type: "microsoft", voice_id: ALLOWED_MS_VOICES.includes(msVoice) ? msVoice : DEFAULT_MS_VOICE },
     },
   };
 

@@ -81,6 +81,7 @@ function CreatePageInner() {
   const [script, setScript] = useState("");
   const [avatarId, setAvatarId] = useState<string | null>(null);
   const [voiceId, setVoiceId] = useState<string | null>(null);
+  const [msVoice, setMsVoice] = useState("pt-BR-AntonioNeural");
   const [avatarName, setAvatarName] = useState("");
   const [thumbnailUrl, setThumbnailUrl] = useState("");
   const [status, setStatus] = useState<VideoStatus>("idle");
@@ -144,6 +145,7 @@ function CreatePageInner() {
   useEffect(() => {
     setAvatarId(localStorage.getItem("campanha_avatar_id"));
     setVoiceId(localStorage.getItem("campanha_avatar_voice_id"));
+    setMsVoice(localStorage.getItem("campanha_ms_voice") || "pt-BR-AntonioNeural");
     setAvatarName(localStorage.getItem("campanha_avatar_name") || "");
     setThumbnailUrl(localStorage.getItem("campanha_avatar_thumbnail") || "");
     // Pre-fill from calendar
@@ -269,7 +271,7 @@ function CreatePageInner() {
       const res = await fetch("/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json", ...getDIDHeaders() },
-        body: JSON.stringify({ script: script.trim(), avatarId, voiceId, bgUrl: bgUrl.trim() || undefined }),
+        body: JSON.stringify({ script: script.trim(), avatarId, voiceId, msVoice, bgUrl: bgUrl.trim() || undefined }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || t("err_unknown"));
@@ -406,6 +408,34 @@ function CreatePageInner() {
         </div>
         <Link href="/avatar" className="text-xs underline" style={{ color: "var(--muted)" }}>{t("crt_replace")}</Link>
       </div>
+
+      {/* Voice picker — only when there is no cloned (ElevenLabs) voice; the TTS
+          fallback would otherwise be a fixed voice and easily wrong-gendered. */}
+      {!voiceId && (
+        <div className="flex items-center gap-2 mb-6 text-xs">
+          <span style={{ color: "var(--muted)" }}>
+            {lang === "pt" ? "Voz:" : lang === "en" ? "Voice:" : "קול:"}
+          </span>
+          {[
+            { id: "pt-BR-AntonioNeural", pt: "Masculina", en: "Male", he: "גבר" },
+            { id: "pt-BR-FranciscaNeural", pt: "Feminina", en: "Female", he: "אישה" },
+          ].map((v) => {
+            const active = msVoice === v.id;
+            return (
+              <button key={v.id}
+                onClick={() => { setMsVoice(v.id); try { localStorage.setItem("campanha_ms_voice", v.id); } catch { /* ignore */ } }}
+                className="px-3 py-1 rounded-full font-bold transition-colors"
+                style={{
+                  background: active ? "var(--gold)" : "var(--card)",
+                  border: `1px solid ${active ? "var(--gold)" : "var(--border)"}`,
+                  color: active ? "#000" : "var(--muted)",
+                }}>
+                {lang === "pt" ? v.pt : lang === "en" ? v.en : v.he}
+              </button>
+            );
+          })}
+        </div>
+      )}
 
       {/* AI Writer */}
       <button
