@@ -399,6 +399,41 @@ export default function AvatarPage() {
             ))}
           </div>
           <p className="text-xs" style={{ color: "var(--muted)" }}>{t("avt_need_time")}</p>
+
+          {/* Quality tips — source quality is the #1 driver of avatar realism */}
+          <div className="mt-3 pt-3" style={{ borderTop: "1px solid rgba(212,175,55,.25)" }}>
+            <p className="text-xs font-bold mb-1.5" style={{ color: "var(--gold)" }}>
+              {lang === "pt" ? "Para a melhor qualidade:" : lang === "en" ? "For the best quality:" : "לאיכות הטובה ביותר:"}
+            </p>
+            <ul className="text-xs space-y-1" style={{ color: "var(--muted)", listStyle: "none", padding: 0 }}>
+              {(lang === "pt"
+                ? [
+                    "Rosto de frente, à altura dos olhos, fundo neutro",
+                    "Luz suave no rosto (evite contraluz e sombras)",
+                    "Sem óculos com reflexo; ombros visíveis",
+                    "Fale natural, olhando para a câmera",
+                    "Melhor resultado: clone a sua voz (ElevenLabs) em vez da voz padrão",
+                  ]
+                : lang === "en"
+                ? [
+                    "Face the camera at eye level, neutral background",
+                    "Soft light on the face (avoid backlight and shadows)",
+                    "No glare on glasses; shoulders visible",
+                    "Speak naturally, looking at the camera",
+                    "Best result: clone your own voice (ElevenLabs) instead of the default voice",
+                  ]
+                : [
+                    "פנים מול המצלמה בגובה העיניים, רקע נייטרלי",
+                    "אור רך על הפנים (הימנע מתאורה מאחור וצללים)",
+                    "בלי בוהק על משקפיים; כתפיים בפריים",
+                    "דבר טבעי, מבט למצלמה",
+                    "התוצאה הכי טובה: שכפל את הקול שלך (ElevenLabs) במקום קול ברירת המחדל",
+                  ]
+              ).map((tip) => (
+                <li key={tip} className="flex gap-1.5"><span style={{ color: "var(--gold)" }}>✓</span><span>{tip}</span></li>
+              ))}
+            </ul>
+          </div>
         </div>
       )}
 
