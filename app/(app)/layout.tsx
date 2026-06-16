@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useLanguage } from "@/lib/LanguageContext";
 import type { Lang } from "@/lib/translations";
 import { useEffect, useState } from "react";
+import LegalNotice from "./LegalNotice";
 
 const CSS = `
   @media (max-width: 768px) {
@@ -156,7 +157,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             <span className="text-base font-bold" style={{ color: "var(--gold)" }}>Campanha</span>
           </div>
 
-          <main className="app-main flex-1 overflow-auto">{children}</main>
+          <main className="app-main flex-1 overflow-auto">
+            {children}
+            <LegalNotice />
+          </main>
         </div>
       </div>
     </>

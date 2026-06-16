@@ -2,6 +2,12 @@ export type Lang = "he" | "en" | "pt";
 
 export const translations = {
   he: {
+    // legal / AI disclosure
+    ai_label: "נוצר ב-AI",
+    legal_ack_title: "הודעה משפטית — שימוש בבינה מלאכותית",
+    legal_ack_body: "הסרטונים נוצרים באמצעות בינה מלאכותית (אווטאר דיגיטלי). באחריותך לסמן אותם בבירור כתוכן שנוצר ב-AI בעת פרסום, בהתאם לכללי ה-TSE. אין לפרסם תוכן סינתטי 72 שעות לפני הבחירות ו-24 שעות אחריהן, ואין ליצור תוכן כוזב או מטעה.",
+    legal_ack_accept: "קראתי ואני מסכים",
+    legal_footer: "⚠️ סרטונים שנוצרו ב-AI. באחריותך לסמן אותם לפי כללי ה-TSE.",
     // nav
     nav_home: "בית",
     nav_avatar: "האווטר שלי",
@@ -307,6 +313,12 @@ export const translations = {
     prof_ai_note: "ה-AI ישתמש במידע זה אוטומטית בעת יצירת כל נאום.",
   },
   en: {
+    // legal / AI disclosure
+    ai_label: "AI-generated",
+    legal_ack_title: "Legal notice — use of AI",
+    legal_ack_body: "Videos are created using artificial intelligence (a digital avatar). You are responsible for clearly labeling them as AI-generated when publishing, in accordance with TSE rules. Do not publish synthetic content in the 72 hours before or the 24 hours after the election, and never create false or deceptive content.",
+    legal_ack_accept: "I have read and agree",
+    legal_footer: "⚠️ Videos created with AI. You are responsible for labeling them per TSE rules.",
     nav_home: "Home",
     nav_avatar: "My Avatar",
     nav_create: "Create Video",
@@ -605,6 +617,12 @@ export const translations = {
     prof_ai_note: "AI uses this info automatically when generating every speech.",
   },
   pt: {
+    // legal / AI disclosure
+    ai_label: "Gerado por IA",
+    legal_ack_title: "Aviso legal — uso de inteligência artificial",
+    legal_ack_body: "Os vídeos são criados com inteligência artificial (avatar digital). É sua responsabilidade rotulá-los de forma clara, explícita e acessível como conteúdo gerado por IA ao publicá-los, conforme as normas do TSE (Resolução nº 23.610/2019). Não publique conteúdo sintético nas 72 horas anteriores nem nas 24 horas seguintes à eleição, e nunca crie conteúdo falso ou enganoso.",
+    legal_ack_accept: "Li e concordo",
+    legal_footer: "⚠️ Vídeos criados com inteligência artificial. Você é responsável por rotulá-los conforme as normas do TSE.",
     nav_home: "Início",
     nav_avatar: "Meu Avatar",
     nav_create: "Criar Vídeo",

@@ -208,8 +208,14 @@ export default function VideosPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState("");
   const [trimmingVideo, setTrimmingVideo] = useState<VideoEntry | null>(null);
+  const [origin, setOrigin] = useState("");
+
+  // Share through the labeled /v/<id> watch page when a tracking link exists,
+  // so externally-shared content always carries the AI-content disclosure.
+  const shareUrl = (v: VideoEntry) => (v.trackId && origin ? `${origin}/v/${v.trackId}` : v.url);
 
   useEffect(() => {
+    setOrigin(window.location.origin);
     let vids: VideoEntry[] = [];
     try { vids = JSON.parse(localStorage.getItem("campanha_videos") || "[]"); } catch { vids = []; }
     setVideos(vids);
@@ -292,7 +298,8 @@ export default function VideosPage() {
           {videos.map((video) => {
             const views = video.trackId !== undefined ? (stats[video.trackId] ?? null) : null;
             const displayName = video.name || video.script.split(" ").slice(0, 5).join(" ");
-            const waUrl = `https://wa.me/?text=${encodeURIComponent(waMsg(avatarName, video.url, lang))}`;
+            const link = shareUrl(video);
+            const waUrl = `https://wa.me/?text=${encodeURIComponent(waMsg(avatarName, link, lang))}`;
 
             return (
               <div key={video.id} className="vid-card rounded-xl overflow-hidden" style={{ background: "var(--card)", border: "1px solid var(--border)" }}>
@@ -305,6 +312,11 @@ export default function VideosPage() {
                     onClick={() => setPlaying(video.id)}>
                     <div style={{ position: "absolute", inset: 0, background: avatarThumb ? "rgba(0,0,0,.45)" : "repeating-linear-gradient(180deg,transparent 0,transparent 3px,rgba(255,255,255,.015) 3px,rgba(255,255,255,.015) 4px)", pointerEvents: "none" }} />
                     <button className="play-btn w-14 h-14 rounded-full flex items-center justify-center text-xl z-10" style={{ background: "var(--gold)", color: "#000" }}>▶</button>
+                    {/* AI-content label */}
+                    <div className="absolute top-2 left-2 flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold z-10"
+                      style={{ background: "rgba(0,0,0,.65)", color: "#f0c040" }}>
+                      ⚠️ {t("ai_label")}
+                    </div>
                     {/* View badge */}
                     {views !== null && (
                       <div className="absolute top-2 right-2 flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold"
@@ -347,9 +359,9 @@ export default function VideosPage() {
                   {/* Action buttons */}
                   <div className="flex gap-2 flex-wrap">
                     <button onClick={async () => {
-                        const text = waMsg(avatarName, video.url, lang);
-                        if (navigator.share) { try { await navigator.share({ text, url: video.url }); return; } catch { /* fallback */ } }
-                        try { await navigator.clipboard.writeText(video.url); } catch { /* ignore */ }
+                        const text = waMsg(avatarName, link, lang);
+                        if (navigator.share) { try { await navigator.share({ text, url: link }); return; } catch { /* fallback */ } }
+                        try { await navigator.clipboard.writeText(link); } catch { /* ignore */ }
                       }}
                       className="flex-1 py-2 rounded-lg text-xs font-bold text-center"
                       style={{ background: "var(--gold)", color: "#000" }}>
@@ -360,7 +372,7 @@ export default function VideosPage() {
                       style={{ background: "#25D366", color: "#fff" }}>
                       WA
                     </a>
-                    <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(video.url)}`} target="_blank" rel="noopener noreferrer"
+                    <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(link)}`} target="_blank" rel="noopener noreferrer"
                       className="flex-1 py-2 rounded-lg text-xs font-bold text-center"
                       style={{ background: "#1877F2", color: "#fff" }}>
                       FB
@@ -370,7 +382,7 @@ export default function VideosPage() {
                       style={{ background: "var(--gold)", color: "#000" }}>
                       {t("vid_download")}
                     </a>
-                    <button onClick={() => copyLink(video.id, video.url)}
+                    <button onClick={() => copyLink(video.id, link)}
                       className="px-3 py-2 rounded-lg text-xs font-semibold transition-colors"
                       style={{ background: copied === video.id ? "var(--gold)" : "var(--border)", color: copied === video.id ? "#000" : "var(--muted)" }}>
                       {copied === video.id ? "✓" : "🔗"}
