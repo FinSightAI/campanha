@@ -87,10 +87,21 @@ function CreatePageInner() {
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [copiedWA, setCopiedWA] = useState(false);
+  const [quota, setQuota] = useState<{ used: number; limit: number; remaining: number | null } | null>(null);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => () => { if (pollRef.current) clearInterval(pollRef.current); }, []);
   useEffect(() => () => { if (prevVttUrl.current) URL.revokeObjectURL(prevVttUrl.current); }, []);
+
+  function refreshQuota() {
+    fetch("/api/quota", { headers: getDIDHeaders() })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => { if (d && typeof d.limit === "number") setQuota(d); })
+      .catch(() => {});
+  }
+  useEffect(() => { refreshQuota(); }, []);
+  // Refresh the counter once a generation finishes (it consumed one unit).
+  useEffect(() => { if (status === "done") refreshQuota(); }, [status]);
 
   // UI toggles
   const [showTemplates, setShowTemplates] = useState(false);
@@ -365,6 +376,22 @@ function CreatePageInner() {
 
       <h1 className="text-2xl font-bold mb-1" style={{ color: "var(--text)" }}>{t("crt_title")}</h1>
       <p className="text-sm mb-8" style={{ color: "var(--muted)" }}>{t("crt_subtitle")}</p>
+
+      {/* Monthly plan usage */}
+      {quota && quota.remaining !== null && (
+        <div className="inline-flex items-center gap-2 rounded-full px-3 py-1 mb-6 text-xs font-bold"
+          style={{
+            background: "var(--card)",
+            border: `1px solid ${quota.remaining === 0 ? "#e55" : quota.remaining <= 3 ? "#e5a000" : "var(--border)"}`,
+            color: quota.remaining === 0 ? "#e55" : quota.remaining <= 3 ? "#e5a000" : "var(--muted)",
+          }}>
+          🎬 {lang === "pt"
+            ? `Restam ${quota.remaining} de ${quota.limit} vídeos este mês`
+            : lang === "en"
+            ? `${quota.remaining} of ${quota.limit} videos left this month`
+            : `נותרו ${quota.remaining} מתוך ${quota.limit} סרטונים החודש`}
+        </div>
+      )}
 
       {/* Avatar badge */}
       <div className="flex items-center gap-3 rounded-xl px-4 py-3 mb-6" style={{ background: "var(--card)", border: "1px solid var(--border)" }}>
