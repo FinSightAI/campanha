@@ -47,10 +47,18 @@ export default function BurstPage() {
     setWriteError("");
     setVariants([]);
     try {
+      const personalContext = [
+        localStorage.getItem("campanha_avatar_name") && `Name: ${localStorage.getItem("campanha_avatar_name")}`,
+        localStorage.getItem("campanha_profile_role") && `Role: ${localStorage.getItem("campanha_profile_role")}`,
+        localStorage.getItem("campanha_profile_city") && `City: ${localStorage.getItem("campanha_profile_city")}`,
+        localStorage.getItem("campanha_profile_party") && `Party: ${localStorage.getItem("campanha_profile_party")}`,
+        localStorage.getItem("campanha_profile_topics") && `Campaign issues: ${localStorage.getItem("campanha_profile_topics")}`,
+        localStorage.getItem("campanha_profile_style") && `Speaking style:\n${localStorage.getItem("campanha_profile_style")}`,
+      ].filter(Boolean).join("\n");
       const res = await fetch("/api/ai-burst", {
         method: "POST",
         headers: { "Content-Type": "application/json", ...getAppHeaders() },
-        body: JSON.stringify({ topic, area, lang }),
+        body: JSON.stringify({ topic, area, lang, personalContext }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);

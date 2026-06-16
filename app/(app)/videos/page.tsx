@@ -38,6 +38,12 @@ function VideoTrimmer({ video, onClose, onSaved, lang, t }: {
     "mozCaptureStream" in document.createElement("video")
   );
 
+  // Stream cross-origin (Blob / D-ID) media through a same-origin proxy so the
+  // element is CORS-clean — otherwise playback and captureStream() both fail.
+  const playUrl = /^https:\/\//.test(video.url)
+    ? `/api/proxy-video?url=${encodeURIComponent(video.url)}`
+    : video.url;
+
   function fmt(s: number) {
     return `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
   }
@@ -68,8 +74,15 @@ function VideoTrimmer({ video, onClose, onSaved, lang, t }: {
       recorder.ondataavailable = (e) => { if (e.data.size > 0) chunks.push(e.data); };
 
       await new Promise<void>((resolve, reject) => {
-        recorder.onstop = () => resolve();
-        recorder.onerror = () => reject(new Error("Recorder error"));
+        // Watchdog: real-time capture should take ~(end-start)s; if seeking
+        // never resolves or playback stalls, bail instead of hanging forever.
+        const watchdog = setTimeout(() => {
+          try { vid.pause(); recorder.stop(); } catch { /* noop */ }
+          reject(new Error("timeout"));
+        }, (endTime - startTime) * 1500 + 8000);
+
+        recorder.onstop = () => { clearTimeout(watchdog); resolve(); };
+        recorder.onerror = () => { clearTimeout(watchdog); reject(new Error("Recorder error")); };
 
         vid.currentTime = startTime;
         vid.onseeked = () => {
@@ -112,7 +125,7 @@ function VideoTrimmer({ video, onClose, onSaved, lang, t }: {
         </div>
 
         <div className="p-5">
-          <video ref={videoRef} src={video.url} crossOrigin="anonymous" onLoadedMetadata={onLoaded}
+          <video ref={videoRef} src={playUrl} onLoadedMetadata={onLoaded}
             className="w-full rounded-xl mb-5" style={{ maxHeight: 220, background: "#000" }}
             onTimeUpdate={() => {
               if (videoRef.current && videoRef.current.currentTime >= endTime) {

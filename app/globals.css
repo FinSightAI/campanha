@@ -46,3 +46,14 @@ body {
   background: var(--border);
   border-radius: 3px;
 }
+
+/* iOS Safari auto-zooms any focused field with font-size < 16px and never
+   zooms back, breaking layout. Force 16px on mobile while keeping the
+   smaller desktop sizing (text-sm/text-xs) above the breakpoint. */
+@media (max-width: 768px) {
+  input,
+  textarea,
+  select {
+    font-size: 16px;
+  }
+}

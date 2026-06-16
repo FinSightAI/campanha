@@ -17,6 +17,18 @@ const SCRIPT_LIMIT = 1000;
 const LIB_KEY = "campanha_scripts";
 const DRAFT_KEY = "campanha_draft";
 
+function getPersonalContext(): string {
+  const parts = [
+    localStorage.getItem("campanha_avatar_name") && `Name: ${localStorage.getItem("campanha_avatar_name")}`,
+    localStorage.getItem("campanha_profile_role") && `Role: ${localStorage.getItem("campanha_profile_role")}`,
+    localStorage.getItem("campanha_profile_city") && `City: ${localStorage.getItem("campanha_profile_city")}`,
+    localStorage.getItem("campanha_profile_party") && `Party: ${localStorage.getItem("campanha_profile_party")}`,
+    localStorage.getItem("campanha_profile_topics") && `Campaign issues: ${localStorage.getItem("campanha_profile_topics")}`,
+    localStorage.getItem("campanha_profile_style") && `Speaking style:\n${localStorage.getItem("campanha_profile_style")}`,
+  ].filter(Boolean);
+  return parts.join("\n");
+}
+
 const TEMPLATES: Record<string, { label: string; text: string }[]> = {
   en: [
     { label: "🏠 Housing", text: "Dear residents of [city], my name is [name], and I'm running for you. Housing prices have doubled in five years. Our families can't afford to live in the city they grew up in. My plan: 500 affordable housing units in three years, plus direct support for young renters. Together, we'll bring home back to the people." },
@@ -178,7 +190,7 @@ function CreatePageInner() {
       const res = await fetch("/api/ai-script", {
         method: "POST",
         headers: { "Content-Type": "application/json", ...getAppHeaders() },
-        body: JSON.stringify({ topic: aiTopic, audience: aiAudience, lang, tone: aiTone, length: aiLen }),
+        body: JSON.stringify({ topic: aiTopic, audience: aiAudience, lang, tone: aiTone, length: aiLen, personalContext: getPersonalContext() }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);

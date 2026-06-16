@@ -30,6 +30,12 @@ const CSS = `
     }
     .app-main {
       padding-top: calc(52px + env(safe-area-inset-top, 0px));
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+    }
+    /* Page roots hard-code p-8 (64px horizontal) which forces page-level
+       horizontal scroll on phones. Shrink it on mobile; desktop keeps p-8. */
+    .app-main .p-8 {
+      padding: 1rem !important;
     }
   }
   @media (min-width: 769px) {
@@ -63,6 +69,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     { href: "/calendar", label: t("nav_calendar"), icon: "📅" },
     { href: "/guide", label: t("nav_guide"), icon: "?" },
     { href: "/settings", label: t("nav_settings"), icon: "⚙" },
+    { href: "/profile", label: t("nav_profile"), icon: "👤" },
   ];
 
   const Sidebar = (

@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 
 export function middleware(req: NextRequest) {
+  // The video proxy is loaded directly by <video src>, which cannot attach a
+  // custom header — allow it through (it has its own host allow-list).
+  if (req.nextUrl.pathname.startsWith("/api/proxy-video")) return NextResponse.next();
+
   const expected = process.env.NEXT_PUBLIC_CAMPANHA_KEY;
   if (!expected) return NextResponse.next(); // dev: skip if not set
   const provided = req.headers.get("x-campanha-key");

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ClerkProvider } from "@clerk/nextjs";
 import { LanguageProvider } from "@/lib/LanguageContext";
 import "./globals.css";
 
@@ -7,8 +8,10 @@ export const metadata: Metadata = {
   description: "Crie vídeos profissionais de campanha com IA",
 };
 
+const clerkKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
+
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return (
+  const inner = (
     <html lang="pt" dir="ltr" className="h-full" suppressHydrationWarning>
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -24,4 +27,6 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       </body>
     </html>
   );
+
+  return clerkKey ? <ClerkProvider publishableKey={clerkKey}>{inner}</ClerkProvider> : inner;
 }

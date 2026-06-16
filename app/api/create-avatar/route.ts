@@ -5,7 +5,7 @@ export async function POST(req: NextRequest) {
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0] ?? "unknown";
   if (!rateLimit(ip, 3, 60)) return Response.json({ error: "Too many requests" }, { status: 429 });
 
-  const apiKey = req.headers.get("x-did-key") || process.env.DID_API_KEY;
+  const apiKey = (req.headers.get("x-did-key") || process.env.DID_API_KEY || "").replace(/^Basic\s+/i, "");
   if (!apiKey) return Response.json({ error: "DID_API_KEY לא מוגדר" }, { status: 500 });
 
   const { name, consentId, sourceUrl } = await req.json();

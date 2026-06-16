@@ -7,6 +7,8 @@ import { getAppHeaders } from "@/lib/didKey";
 const SYNC_KEYS = [
   "campanha_avatar_id", "campanha_avatar_name", "campanha_avatar_voice_id",
   "campanha_avatar_thumbnail", "campanha_videos", "campanha_scripts", "campanha_lang",
+  "campanha_profile_role", "campanha_profile_city", "campanha_profile_party",
+  "campanha_profile_topics", "campanha_profile_style",
 ];
 
 export default function SettingsPage() {

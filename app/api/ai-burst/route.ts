@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0] ?? "unknown";
   if (!rateLimit(ip, 20, 60)) return NextResponse.json({ error: "Too many requests" }, { status: 429 });
 
-  const { topic, area, lang } = await req.json();
+  const { topic, area, lang, personalContext } = await req.json();
   if (!topic) return NextResponse.json({ error: "Missing topic" }, { status: 400 });
 
   const apiKey = process.env.GEMINI_API_KEY;
@@ -22,7 +22,11 @@ export async function POST(req: NextRequest) {
   const areaStr = area ? ` for ${area}` : "";
   const audiences = AUDIENCES[lang as keyof typeof AUDIENCES] || AUDIENCES.en;
 
-  const prompt = `You are a political campaign speechwriter. Write 5 different campaign speeches about "${topic}"${areaStr} in ${langLabel}.
+  const contextStr = personalContext
+    ? `\n\nIMPORTANT — all speeches must sound authentically like THIS specific candidate:\n${personalContext}\nAdapt vocabulary, references, and style to match the candidate's profile above.`
+    : "";
+
+  const prompt = `You are a political campaign speechwriter. Write 5 different campaign speeches about "${topic}"${areaStr} in ${langLabel}.${contextStr}
 
 Each speech must be adapted for a specific audience:
 1. ${audiences[0]}
@@ -43,7 +47,7 @@ Return ONLY valid JSON with this exact structure:
   try {
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({
-      model: "gemini-2.5-flash-preview-05-20",
+      model: "gemini-2.5-flash",
       generationConfig: { responseMimeType: "application/json" },
     });
     const result = await model.generateContent(prompt);

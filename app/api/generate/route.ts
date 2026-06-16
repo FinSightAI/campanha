@@ -5,13 +5,19 @@ export async function POST(req: NextRequest) {
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0] ?? "unknown";
   if (!rateLimit(ip, 5, 60)) return Response.json({ error: "Too many requests" }, { status: 429 });
 
-  const apiKey = req.headers.get("x-did-key") || process.env.DID_API_KEY;
+  const apiKey = (req.headers.get("x-did-key") || process.env.DID_API_KEY || "").replace(/^Basic\s+/i, "");
   if (!apiKey) return Response.json({ error: "DID_API_KEY not configured" }, { status: 500 });
 
   const { script, avatarId, voiceId, bgUrl } = await req.json();
 
-  if (!script || !avatarId) {
+  if (typeof script !== "string" || typeof avatarId !== "string" || !script.trim() || !avatarId.trim()) {
     return Response.json({ error: "Missing parameters" }, { status: 400 });
+  }
+  if (script.length > 6000) {
+    return Response.json({ error: "Script too long" }, { status: 400 });
+  }
+  if (voiceId != null && typeof voiceId !== "string") {
+    return Response.json({ error: "Invalid voiceId" }, { status: 400 });
   }
 
   const body: Record<string, unknown> = {
