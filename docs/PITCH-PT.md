@@ -42,3 +42,17 @@ voz, e depois é só **escrever o texto** para gerar vídeos seus falando com o
 eleitor — em minutos, no seu rosto e na sua voz. Todo vídeo já vem **rotulado
 como IA** conforme o TSE. Piloto de **R$ 397/mês** (1 avatar + 15 vídeos), nas
 suas próprias contas. Te mostro um exemplo?
+
+---
+
+## CTAs alternativos
+
+Escolha o fechamento conforme a situação:
+
+- **Tenho um vídeo de exemplo pronto:**
+  "Quer que eu te mostre um **vídeo de exemplo** e ative o seu piloto?"
+- **Ainda não tenho exemplo (agendar demonstração):**
+  "Podemos marcar uma **demonstração rápida** (15 min)? Eu te mostro a
+  ferramenta funcionando ao vivo e, se fizer sentido, ativamos o seu piloto."
+- **Fechamento direto:**
+  "Posso já preparar o seu acesso ao piloto e te enviar o passo a passo. Topa?"
