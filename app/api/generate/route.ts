@@ -1,5 +1,6 @@
 import { NextRequest } from "next/server";
 import { rateLimit } from "@/lib/rateLimit";
+import { checkVideoQuota, incrementVideoQuota } from "@/lib/quota";
 
 export async function POST(req: NextRequest) {
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0] ?? "unknown";
@@ -18,6 +19,20 @@ export async function POST(req: NextRequest) {
   }
   if (voiceId != null && typeof voiceId !== "string") {
     return Response.json({ error: "Invalid voiceId" }, { status: 400 });
+  }
+
+  // Monthly plan quota (keyed to the billed D-ID account). Block before spending.
+  const quota = await checkVideoQuota(apiKey);
+  if (!quota.allowed) {
+    return Response.json(
+      {
+        error: "Limite de vídeos do seu plano atingido neste mês. Fale com o suporte para ampliar.",
+        code: "quota_exceeded",
+        used: quota.used,
+        limit: quota.limit,
+      },
+      { status: 402 }
+    );
   }
 
   const body: Record<string, unknown> = {
@@ -55,5 +70,7 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  return Response.json({ id: data.id });
+  // Count only billed (successful) generations.
+  const after = await incrementVideoQuota(apiKey);
+  return Response.json({ id: data.id, remaining: after.remaining, limit: after.limit });
 }

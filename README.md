@@ -60,6 +60,7 @@ Set these in `.env.local` (local) and in the Vercel dashboard (production):
 | `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | Clerk publishable key |
 | `CLERK_SECRET_KEY` | Clerk secret key — read implicitly by the Clerk SDK |
 | `NEXT_PUBLIC_CAMPANHA_KEY` | Optional API gate — if set, requests to `/api/*` must send a matching `x-campanha-key` header (see `middleware.ts`) |
+| `CAMPANHA_MONTHLY_VIDEO_LIMIT` | Monthly video-generation cap per D-ID account (default `15`; set `0` for unlimited). Enforced in `/api/generate`, usage at `GET /api/quota`. See `lib/quota.ts` |
 
 ## Project structure
 
