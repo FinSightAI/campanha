@@ -11,7 +11,7 @@ export async function POST(req: NextRequest) {
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0] ?? "unknown";
   if (!rateLimit(ip, 5, 60)) return Response.json({ error: "Too many requests" }, { status: 429 });
 
-  const apiKey = (req.headers.get("x-did-key") || process.env.DID_API_KEY || "").replace(/^Basic\s+/i, "");
+  const apiKey = (req.headers.get("x-did-key") || process.env.DID_API_KEY || "").replace(/^Basic\s+/i, "").replace(/\s+/g, "");
   if (!apiKey) return Response.json({ error: "DID_API_KEY not configured" }, { status: 500 });
 
   const { script, avatarId, voiceId, bgUrl, msVoice } = await req.json();

@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 
 export async function POST(req: NextRequest) {
-  const apiKey = (req.headers.get("x-did-key") || process.env.DID_API_KEY || "").replace(/^Basic\s+/i, "");
+  const apiKey = (req.headers.get("x-did-key") || process.env.DID_API_KEY || "").replace(/^Basic\s+/i, "").replace(/\s+/g, "");
   if (!apiKey) return Response.json({ error: "DID_API_KEY לא מוגדר" }, { status: 500 });
 
   const { language } = await req.json();
