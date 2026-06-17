@@ -61,6 +61,7 @@ export async function incrementVideoQuota(identity: string): Promise<QuotaResult
   await put(path, JSON.stringify({ used, updatedAt: new Date().toISOString() }), {
     access: "public",
     addRandomSuffix: false,
+    allowOverwrite: true, // same path is rewritten each increment
     token,
     contentType: "application/json",
   });

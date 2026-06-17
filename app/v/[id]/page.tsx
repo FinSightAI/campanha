@@ -26,6 +26,7 @@ export default async function WatchPage({ params }: { params: Promise<{ id: stri
       await put(`tracks/${id}.json`, updated, {
         access: "public",
         addRandomSuffix: false,
+        allowOverwrite: true, // count is incremented in-place each view
         token,
         contentType: "application/json",
       });

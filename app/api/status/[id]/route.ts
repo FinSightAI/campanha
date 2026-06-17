@@ -33,7 +33,7 @@ export async function GET(
       const ext = contentType.includes("webm") ? "webm" : "mp4";
       const buffer = await vid.arrayBuffer();
       // Deterministic path so a re-poll overwrites the same object and the URL is stable.
-      const { url } = await put(`videos/${id}.${ext}`, buffer, { access: "public", addRandomSuffix: false, contentType });
+      const { url } = await put(`videos/${id}.${ext}`, buffer, { access: "public", addRandomSuffix: false, allowOverwrite: true, contentType });
       return Response.json({ status: "done", result_url: url });
     } catch {
       // Fall back to D-ID URL if archival fails

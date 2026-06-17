@@ -19,6 +19,9 @@ export async function POST(req: Request) {
           "audio/mpeg", "audio/wav", "audio/mp4", "audio/x-m4a", "audio/webm", "audio/ogg",
         ],
         maximumSizeInBytes: 120 * 1024 * 1024,
+        // Unique path per upload so retrying with the same filename doesn't
+        // collide ("This blob already exists").
+        addRandomSuffix: true,
       }),
       onUploadCompleted: async () => {},
     });
