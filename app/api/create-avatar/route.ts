@@ -34,7 +34,8 @@ export async function POST(req: NextRequest) {
   const data = await res.json();
   if (!res.ok) {
     console.error("[create-avatar]", res.status, data?.message);
-    return Response.json({ error: "Erro ao criar o avatar. Tente novamente." }, { status: res.status });
+    // TEMP-DIAGNOSTIC: surface raw D-ID reason to diagnose the pilot test
+    return Response.json({ error: `D-ID ${res.status}: ${data?.message || data?.description || "?"}` }, { status: res.status });
   }
 
   return Response.json({ id: data.id, status: data.status });

@@ -29,7 +29,8 @@ export async function POST(
   const data = await res.json();
   if (!res.ok) {
     console.error("[submit-consent]", res.status, data?.message);
-    return Response.json({ error: "Erro ao enviar. Tente novamente." }, { status: res.status });
+    // TEMP-DIAGNOSTIC: surface raw D-ID reason to diagnose the pilot test
+    return Response.json({ error: `D-ID ${res.status}: ${data?.message || data?.description || "?"}` }, { status: res.status });
   }
 
   return Response.json({ status: data.status });
