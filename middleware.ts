@@ -27,6 +27,11 @@ export function middleware(req: NextRequest) {
     }
   }
 
+  // The @vercel/blob client upload() requests an upload token from /api/upload
+  // and cannot attach our custom gate header — skip the static-key gate here
+  // (still covered by the CSRF Origin check above + per-IP rate limiting).
+  if (req.nextUrl.pathname.startsWith("/api/upload")) return NextResponse.next();
+
   const expected = process.env.NEXT_PUBLIC_CAMPANHA_KEY;
   if (!expected) return NextResponse.next(); // dev: skip if not set
   const provided = req.headers.get("x-campanha-key");
