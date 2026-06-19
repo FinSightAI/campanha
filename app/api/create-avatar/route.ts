@@ -34,8 +34,10 @@ export async function POST(req: NextRequest) {
   const data = await res.json();
   if (!res.ok) {
     console.error("[create-avatar]", res.status, data?.message);
-    // TEMP-DIAGNOSTIC: surface raw D-ID reason to diagnose the pilot test
-    return Response.json({ error: `D-ID ${res.status}: ${data?.message || data?.description || "?"}` }, { status: res.status });
+    const msg = res.status === 401 || res.status === 403
+      ? "Seu plano D-ID não permite criar avatares personalizados. Faça upgrade para um plano pago (Pro ou superior)."
+      : "Erro ao criar o avatar. Tente novamente.";
+    return Response.json({ error: msg }, { status: res.status });
   }
 
   return Response.json({ id: data.id, status: data.status });

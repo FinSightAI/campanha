@@ -29,8 +29,10 @@ export async function POST(
   const data = await res.json();
   if (!res.ok) {
     console.error("[submit-consent]", res.status, data?.message);
-    // TEMP-DIAGNOSTIC: surface raw D-ID reason to diagnose the pilot test
-    return Response.json({ error: `D-ID ${res.status}: ${data?.message || data?.description || "?"}` }, { status: res.status });
+    const msg = res.status === 401 || res.status === 403
+      ? "Seu plano D-ID não permite este recurso. Faça upgrade para um plano pago (Pro ou superior)."
+      : "Erro ao enviar. Tente novamente.";
+    return Response.json({ error: msg }, { status: res.status });
   }
 
   return Response.json({ status: data.status });
