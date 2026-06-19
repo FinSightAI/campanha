@@ -153,7 +153,7 @@ function CreatePageInner() {
     const topic = searchParams.get("topic") || "";
     const audience = searchParams.get("audience") || "";
     if (topic) { setAiTopic(topic); setAiAudience(audience); setShowAI(true); }
-    else if (searchParams.get("ai")) setShowAI(true);
+    else if (searchParams.get("ai") || !localStorage.getItem("campanha_draft")) setShowAI(true);
     // Load library
     try { setSavedScripts(JSON.parse(localStorage.getItem(LIB_KEY) || "[]")); } catch { /* ignore */ }
     // Check for saved draft
@@ -360,7 +360,7 @@ function CreatePageInner() {
   }
 
   return (
-    <div className="p-8 max-w-2xl">
+    <div className="p-8" style={{ maxWidth: "min(62rem, 100%)", margin: "0 auto", width: "100%" }}>
       {/* Confetti overlay */}
       {showConfetti && (
         <div style={{ position: "fixed", inset: 0, pointerEvents: "none", zIndex: 200, overflow: "hidden" }}>

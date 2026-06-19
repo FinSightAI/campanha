@@ -408,7 +408,7 @@ export default function AvatarPage() {
   }[step] || 1;
 
   return (
-    <div className="p-8 max-w-lg">
+    <div className="p-8" style={{ maxWidth: "min(56rem, 100%)", margin: "0 auto", width: "100%" }}>
       <h1 className="text-2xl font-bold mb-1" style={{ color: "var(--text)" }}>{t("avt_title")}</h1>
       <p className="text-sm mb-6" style={{ color: "var(--muted)" }}>{t("avt_subtitle")}</p>
 
@@ -442,7 +442,7 @@ export default function AvatarPage() {
                     "Luz suave no rosto (evite contraluz e sombras)",
                     "Sem óculos com reflexo; ombros visíveis",
                     "Fale natural, olhando para a câmera",
-                    "Melhor resultado: clone a sua voz (ElevenLabs) em vez da voz padrão",
+                    "Melhor resultado: use voz personalizada em vez da voz padrão",
                   ]
                 : lang === "en"
                 ? [
@@ -450,14 +450,14 @@ export default function AvatarPage() {
                     "Soft light on the face (avoid backlight and shadows)",
                     "No glare on glasses; shoulders visible",
                     "Speak naturally, looking at the camera",
-                    "Best result: clone your own voice (ElevenLabs) instead of the default voice",
+                    "Best result: use a custom voice instead of the default voice",
                   ]
                 : [
                     "פנים מול המצלמה בגובה העיניים, רקע נייטרלי",
                     "אור רך על הפנים (הימנע מתאורה מאחור וצללים)",
                     "בלי בוהק על משקפיים; כתפיים בפריים",
                     "דבר טבעי, מבט למצלמה",
-                    "התוצאה הכי טובה: שכפל את הקול שלך (ElevenLabs) במקום קול ברירת המחדל",
+                    "התוצאה הכי טובה: השתמש בקול מותאם אישית במקום קול ברירת המחדל",
                   ]
               ).map((tip) => (
                 <li key={tip} className="flex gap-1.5"><span style={{ color: "var(--gold)" }}>✓</span><span>{tip}</span></li>
@@ -693,18 +693,6 @@ export default function AvatarPage() {
         </div>
       )}
 
-      {/* Tips */}
-      {step !== "done" && (
-        <div className="mt-8 p-4 rounded-xl text-sm" style={{ background: "var(--card)", border: "1px solid var(--border)" }}>
-          <p className="font-semibold mb-2" style={{ color: "var(--gold)" }}>{t("avt_tips_title")}</p>
-          <ul className="space-y-1" style={{ color: "var(--muted)" }}>
-            <li>• {t("avt_tip1")}</li>
-            <li>• {t("avt_tip2")}</li>
-            <li>• {t("avt_tip3")}</li>
-            <li>• {t("avt_tip4")}</li>
-          </ul>
-        </div>
-      )}
     </div>
   );
 }

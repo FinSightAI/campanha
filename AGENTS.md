@@ -17,8 +17,11 @@ When changing share, video, or distribution code, you MUST preserve these:
 
 1. **Public watch page** (`app/v/[id]/page.tsx`) — every shared link resolves to a
    page that embeds the video with a prominent, always-visible AI-content banner
-   + the technology name (D-ID), in pt-BR. Do **not** revert it to a bare redirect
-   to the raw video file (that exposes unlabeled content).
+   naming "plataforma Campanha IA", in pt-BR. Do **not** revert it to a bare redirect
+   to the raw video file (that exposes unlabeled content). **Do NOT replace "Campanha IA"
+   with the underlying vendor name (D-ID / HeyGen) — the operator intentionally keeps
+   vendor names private; "Campanha IA" satisfies the TSE "qual tecnologia" requirement
+   as the branded platform that generated the content.**
 2. **Shares route through the watch page** — WhatsApp/Facebook/native/copy on the
    videos page share the `/v/<trackId>` watch URL (see `shareUrl()` in
    `app/(app)/videos/page.tsx`), never the raw `video.url`, whenever a tracking

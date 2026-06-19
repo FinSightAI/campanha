@@ -74,7 +74,7 @@ export default async function WatchPage({ params }: { params: Promise<{ id: stri
         >
           <span style={{ fontSize: 18 }}>⚠️</span>
           <span>
-            Conteúdo gerado por inteligência artificial (avatar digital · tecnologia D-ID).
+            {"Conteúdo gerado por inteligência artificial (avatar digital · plataforma Campanha IA)."}
           </span>
         </div>
 

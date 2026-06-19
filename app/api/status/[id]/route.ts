@@ -5,10 +5,67 @@ export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
+
+  // ── HeyGen status — IDs are prefixed "heygen_" ────────────────────────────
+  if (id.startsWith("heygen_")) {
+    const heygenKey = process.env.HEYGEN_API_KEY;
+    if (!heygenKey) return Response.json({ error: "Serviço não configurado." }, { status: 500 });
+
+    const videoId = id.slice("heygen_".length);
+
+    try {
+      const res = await fetch(
+        `https://api.heygen.com/v1/video_status.get?video_id=${encodeURIComponent(videoId)}`,
+        { headers: { "X-Api-Key": heygenKey }, cache: "no-store" }
+      );
+
+      if (!res.ok) {
+        console.error("[heygen status]", res.status);
+        return Response.json({ status: "processing" });
+      }
+
+      const data = await res.json();
+      const st: string = data?.data?.status ?? "processing";
+
+      if (st === "completed") {
+        const resultUrl = data.data.video_url as string;
+
+        // Archive to Blob for stable URL (same pattern as D-ID).
+        try {
+          const blobPath = `videos/${id}.mp4`;
+          const { blobs } = await list({ prefix: blobPath });
+          const existing = blobs.find((b) => b.pathname === blobPath);
+          if (existing) return Response.json({ status: "done", result_url: existing.url });
+
+          const vid = await fetch(resultUrl, { signal: AbortSignal.timeout(40000) });
+          const buffer = await vid.arrayBuffer();
+          const { url } = await put(blobPath, buffer, {
+            access: "public",
+            addRandomSuffix: false,
+            allowOverwrite: true,
+            contentType: "video/mp4",
+          });
+          return Response.json({ status: "done", result_url: url });
+        } catch {
+          // Non-fatal — serve HeyGen URL directly if archival fails.
+          return Response.json({ status: "done", result_url: resultUrl });
+        }
+      }
+
+      if (st === "failed") {
+        return Response.json({ status: "error", error: "Geração falhou." });
+      }
+
+      return Response.json({ status: "processing" });
+    } catch {
+      return Response.json({ status: "processing" });
+    }
+  }
+
+  // ── D-ID status (default) ─────────────────────────────────────────────────
   const apiKey = (req.headers.get("x-did-key") || process.env.DID_API_KEY || "").replace(/^Basic\s+/i, "").replace(/\s+/g, "");
   if (!apiKey) return Response.json({ error: "DID_API_KEY לא מוגדר" }, { status: 500 });
-
-  const { id } = await params;
 
   const res = await fetch(`https://api.d-id.com/scenes/${id}`, {
     headers: { Authorization: `Basic ${apiKey}` },

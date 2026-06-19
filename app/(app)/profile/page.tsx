@@ -113,7 +113,7 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="p-8 max-w-lg space-y-6">
+    <div className="p-8 space-y-6" style={{ maxWidth: "min(56rem, 100%)", margin: "0 auto", width: "100%" }}>
       <div>
         <h1 className="text-2xl font-bold mb-1" style={{ color: "var(--text)" }}>{t("prof_title")}</h1>
         <p className="text-sm" style={{ color: "var(--muted)" }}>{t("prof_subtitle")}</p>

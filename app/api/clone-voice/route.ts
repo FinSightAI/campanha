@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
   // fall back to the server key if configured.
   const elKey = req.headers.get("x-elevenlabs-key")?.trim() || process.env.ELEVENLABS_API_KEY;
   if (!elKey) {
-    return Response.json({ error: "Clonagem de voz não configurada. Adicione sua chave ElevenLabs nas Configurações." }, { status: 503 });
+    return Response.json({ error: "Clonagem de voz não configurada. Entre em contato com o suporte." }, { status: 503 });
   }
 
   const { audioUrl, name } = await req.json();

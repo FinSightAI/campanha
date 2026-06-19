@@ -15,6 +15,9 @@
   --text: #f4f4f7;
   --muted: #9a9ab2;
   --shadow: 0 10px 34px rgba(0,0,0,.40);
+  --shadow-card: 0 2px 12px rgba(0,0,0,.28);
+  --shadow-hover: 0 6px 24px rgba(0,0,0,.38);
+  --glow-gold: 0 0 22px rgba(230,194,90,.22);
 }
 
 /* ── Light theme ────────────────────────────────────────────────── */
@@ -31,6 +34,9 @@
   --text: #1a1b25;
   --muted: #6b6c80;
   --shadow: 0 10px 30px rgba(30,32,60,.10);
+  --shadow-card: 0 2px 10px rgba(30,32,60,.10);
+  --shadow-hover: 0 6px 20px rgba(30,32,60,.16);
+  --glow-gold: 0 0 18px rgba(176,125,18,.16);
 }
 
 @theme inline {
@@ -77,6 +83,12 @@ select {
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--gold-dim); }
 
+/* Focus ring for keyboard nav */
+button:focus-visible, a:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+
 /* iOS Safari auto-zooms any focused field with font-size < 16px and never
    zooms back, breaking layout. Force 16px on mobile while keeping the
    smaller desktop sizing (text-sm/text-xs) above the breakpoint. */
@@ -86,4 +98,14 @@ select {
   select {
     font-size: 16px;
   }
+}
+
+/* Desktop: widen page max-widths so content fills the screen.
+   Lives at the end of this compiled stylesheet so it beats Tailwind utilities. */
+@media (min-width: 769px) {
+  .app-main .max-w-lg  { max-width: 42rem; }
+  .app-main .max-w-xl  { max-width: 50rem; }
+  .app-main .max-w-2xl { max-width: 58rem; }
+  .app-main .max-w-3xl { max-width: 70rem; }
+  .app-main .max-w-4xl { max-width: 84rem; }
 }

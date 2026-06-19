@@ -277,7 +277,7 @@ export default function VideosPage() {
   return (
     <>
       <style>{CSS}</style>
-      <div className="p-8 max-w-4xl">
+      <div className="p-8" style={{ maxWidth: "min(88rem, 100%)", margin: "0 auto", width: "100%" }}>
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-2xl font-bold" style={{ color: "var(--text)" }}>{t("vid_title")}</h1>

@@ -8,8 +8,11 @@ export async function GET(req: NextRequest) {
 
   const q = await checkVideoQuota(apiKey);
   return Response.json({
-    used: q.used,
-    limit: q.limit,
-    remaining: Number.isFinite(q.remaining) ? q.remaining : null, // null = unlimited
+    used: q.videos_used,
+    limit: q.videos_limit,
+    remaining: q.remaining_videos,
+    seconds_used: q.seconds_used,
+    seconds_limit: q.seconds_limit,
+    remaining_seconds: q.remaining_seconds,
   });
 }

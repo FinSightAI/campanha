@@ -30,7 +30,7 @@ export async function POST(
   if (!res.ok) {
     console.error("[submit-consent]", res.status, data?.message);
     const msg = res.status === 401 || res.status === 403
-      ? "Seu plano D-ID não permite este recurso. Faça upgrade para um plano pago (Pro ou superior)."
+      ? "Seu plano não permite este recurso. Entre em contato com o suporte."
       : "Erro ao enviar. Tente novamente.";
     return Response.json({ error: msg }, { status: res.status });
   }

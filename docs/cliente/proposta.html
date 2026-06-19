@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Proposta Comercial — Campanha IA</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: #0a0a14;
+    color: #e8e8f0;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+  }
+  .page {
+    width: 100%;
+    max-width: 640px;
+  }
+  @media print {
+    @page { size: A4; margin: 14mm 16mm; }
+    html {
+      font-size: 13px;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    body {
+      background: #0a0a14 !important;
+      display: block;
+      min-height: unset;
+      padding: 0;
+      width: 100%;
+    }
+    .page {
+      max-width: 100%;
+      width: 100%;
+      padding: 0;
+    }
+    .plans { grid-template-columns: 1fr 1fr; }
+    .trial-box { page-break-inside: avoid; }
+    .deliverables { page-break-inside: avoid; }
+    .conditions { page-break-inside: avoid; }
+    .roadmap { page-break-inside: avoid; }
+    .cta { page-break-inside: avoid; }
+    .plan { page-break-inside: avoid; }
+  }
+  .header {
+    text-align: center;
+    margin-bottom: 48px;
+  }
+  .logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 32px;
+  }
+  .logo-icon {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, #e6c25a, #c9a227);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+  }
+  .logo-text {
+    font-size: 22px;
+    font-weight: 700;
+    color: #e6c25a;
+    letter-spacing: -0.5px;
+  }
+  .header h1 {
+    font-size: 28px;
+    font-weight: 800;
+    color: #fff;
+    margin-bottom: 10px;
+    letter-spacing: -0.5px;
+  }
+  .header p {
+    font-size: 17px;
+    color: #8888a8;
+    line-height: 1.6;
+    max-width: 480px;
+    margin: 0 auto;
+  }
+  .divider {
+    height: 1px;
+    background: linear-gradient(to right, transparent, #2a2a3a, transparent);
+    margin: 40px 0;
+  }
+  .section-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #e6c25a;
+    margin-bottom: 20px;
+  }
+  .what-is {
+    background: #12121e;
+    border: 1px solid #1e1e30;
+    border-radius: 16px;
+    padding: 28px;
+    margin-bottom: 32px;
+  }
+  .what-is p {
+    font-size: 17px;
+    line-height: 1.7;
+    color: #b0b0cc;
+  }
+  .plans {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+  @media (max-width: 520px) {
+    .plans { grid-template-columns: 1fr; }
+  }
+  .plan {
+    background: #12121e;
+    border: 1px solid #1e1e30;
+    border-radius: 16px;
+    padding: 24px;
+    position: relative;
+  }
+  .plan.premium {
+    border-color: rgba(230,194,90,.35);
+    background: linear-gradient(135deg, #16141f, #12121e);
+  }
+  .plan-badge {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 20px;
+    margin-bottom: 16px;
+  }
+  .plan.standard .plan-badge {
+    background: #1e1e30;
+    color: #8888a8;
+  }
+  .plan.premium .plan-badge {
+    background: rgba(230,194,90,.15);
+    color: #e6c25a;
+  }
+  .plan-name {
+    font-size: 18px;
+    font-weight: 800;
+    color: #fff;
+    margin-bottom: 4px;
+  }
+  .plan-price {
+    font-size: 32px;
+    font-weight: 800;
+    color: #e6c25a;
+    margin-bottom: 4px;
+    letter-spacing: -1px;
+  }
+  .plan-price span {
+    font-size: 14px;
+    font-weight: 500;
+    color: #8888a8;
+  }
+  .plan-subtitle {
+    font-size: 12px;
+    color: #8888a8;
+    margin-bottom: 20px;
+  }
+  .plan-divider {
+    height: 1px;
+    background: #1e1e30;
+    margin-bottom: 20px;
+  }
+  .feature-list {
+    list-style: none;
+  }
+  .feature-list li {
+    font-size: 15px;
+    color: #b0b0cc;
+    padding: 5px 0;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    line-height: 1.5;
+  }
+  .feature-list li::before {
+    content: "✓";
+    color: #e6c25a;
+    font-weight: 700;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .premium .feature-list li::before {
+    color: #e6c25a;
+  }
+  .conditions {
+    background: #12121e;
+    border: 1px solid #1e1e30;
+    border-radius: 16px;
+    padding: 24px 28px;
+    margin-bottom: 32px;
+  }
+  .conditions ul {
+    list-style: none;
+  }
+  .conditions ul li {
+    font-size: 16px;
+    color: #b0b0cc;
+    padding: 6px 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .conditions ul li::before {
+    content: "·";
+    color: #e6c25a;
+    font-size: 20px;
+    line-height: 1;
+  }
+  .cta {
+    text-align: center;
+    background: linear-gradient(135deg, rgba(230,194,90,.08), rgba(230,194,90,.04));
+    border: 1px solid rgba(230,194,90,.2);
+    border-radius: 16px;
+    padding: 32px;
+  }
+  .cta p {
+    font-size: 14px;
+    color: #8888a8;
+    margin-bottom: 8px;
+  }
+  .cta .contact {
+    display: inline-block;
+    margin-top: 4px;
+    font-size: 16px;
+    font-weight: 700;
+    color: #000;
+    background: #25d366;
+    padding: 12px 28px;
+    border-radius: 50px;
+    text-decoration: none;
+  }
+  .cta .contact:hover { opacity: .9; }
+  .trial-box {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background: linear-gradient(135deg, rgba(230,194,90,.1), rgba(230,194,90,.05));
+    border: 1px solid rgba(230,194,90,.35);
+    border-radius: 16px;
+    padding: 24px 28px;
+    margin-bottom: 12px;
+  }
+  @media (max-width: 520px) {
+    .trial-box { flex-direction: column; }
+    .trial-arrow { transform: rotate(90deg); }
+  }
+  .trial-left, .trial-right { flex: 1; }
+  .trial-arrow {
+    font-size: 22px;
+    color: #e6c25a;
+    flex-shrink: 0;
+    opacity: .6;
+  }
+  .trial-badge {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: #e6c25a;
+    margin-bottom: 8px;
+  }
+  .trial-price {
+    font-size: 30px;
+    font-weight: 800;
+    color: #fff;
+    letter-spacing: -1px;
+    margin-bottom: 8px;
+  }
+  .trial-price span {
+    font-size: 13px;
+    font-weight: 500;
+    color: #8888a8;
+  }
+  .trial-desc {
+    font-size: 15px;
+    color: #a0a0c0;
+    line-height: 1.6;
+  }
+  .trial-desc strong { color: #e8e8f0; }
+  .deliverables {
+    background: #12121e;
+    border: 1px solid #1e1e30;
+    border-radius: 16px;
+    padding: 8px 0;
+    margin-bottom: 32px;
+  }
+  .deliv-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 18px 24px;
+    border-bottom: 1px solid #1a1a28;
+  }
+  .deliv-item:last-child { border-bottom: none; }
+  .deliv-icon {
+    font-size: 22px;
+    flex-shrink: 0;
+    width: 36px;
+    text-align: center;
+    margin-top: 1px;
+  }
+  .deliv-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #e8e8f0;
+    margin-bottom: 3px;
+  }
+  .deliv-desc {
+    font-size: 15px;
+    color: #8888a8;
+    line-height: 1.55;
+  }
+  .roadmap {
+    background: #12121e;
+    border: 1px solid #1e1e30;
+    border-radius: 16px;
+    padding: 24px 28px;
+    margin-bottom: 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+  .roadmap-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+  }
+  .roadmap-dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #2a2a3a;
+    border: 2px solid #3a3a50;
+    flex-shrink: 0;
+    margin-top: 3px;
+  }
+  .roadmap-dot.active {
+    background: #e6c25a;
+    border-color: #e6c25a;
+    box-shadow: 0 0 10px rgba(230,194,90,.4);
+  }
+  .roadmap-line {
+    width: 2px;
+    height: 24px;
+    background: #1e1e30;
+    margin-left: 6px;
+  }
+  .roadmap-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #e8e8f0;
+    margin-bottom: 2px;
+  }
+  .roadmap-desc {
+    font-size: 14px;
+    color: #8888a8;
+    line-height: 1.5;
+    padding-bottom: 4px;
+  }
+  .footer {
+    text-align: center;
+    margin-top: 40px;
+    font-size: 12px;
+    color: #44445a;
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="header">
+    <div class="logo">
+      <div class="logo-icon">🎬</div>
+      <span class="logo-text">Campanha IA</span>
+    </div>
+    <h1>Proposta Comercial</h1>
+    <p>Plataforma de vídeos de campanha com inteligência artificial — avatar digital com a sua voz, pronto para compartilhar em minutos.</p>
+  </div>
+
+  <div class="divider"></div>
+
+  <p class="section-label">O que é</p>
+  <div class="what-is">
+    <p>O Campanha IA transforma o seu discurso em vídeos profissionais com o seu avatar digital, falando com a sua própria voz. Sem câmera, sem estúdio, sem equipe. Você escreve — ou a IA escreve por você — e em minutos o vídeo está pronto para circular no WhatsApp, Instagram e Facebook.</p>
+  </div>
+
+  <p class="section-label">O que você recebe</p>
+  <div class="deliverables">
+    <div class="deliv-item">
+      <div class="deliv-icon">🧑‍💼</div>
+      <div class="deliv-body">
+        <div class="deliv-title">Avatar digital do candidato</div>
+        <div class="deliv-desc">Criado a partir de um vídeo seu — o avatar tem o seu rosto, a sua expressão, o seu visual. Aparece em todos os vídeos de campanha.</div>
+      </div>
+    </div>
+    <div class="deliv-item">
+      <div class="deliv-icon">🎙️</div>
+      <div class="deliv-body">
+        <div class="deliv-title">Voz clonada</div>
+        <div class="deliv-desc">O avatar fala com a sua própria voz — não é uma voz artificial genérica. O eleitor ouve você.</div>
+      </div>
+    </div>
+    <div class="deliv-item">
+      <div class="deliv-icon">✍️</div>
+      <div class="deliv-body">
+        <div class="deliv-title">Roteirista com IA</div>
+        <div class="deliv-desc">Escreve o discurso político por você em segundos. Você revisa, ajusta e manda gerar. Sem página em branco.</div>
+      </div>
+    </div>
+    <div class="deliv-item">
+      <div class="deliv-icon">🎬</div>
+      <div class="deliv-body">
+        <div class="deliv-title">Vídeos prontos em minutos</div>
+        <div class="deliv-desc">Sem câmera, sem estúdio, sem equipe. Você digita o roteiro e em minutos o vídeo está pronto para circular.</div>
+      </div>
+    </div>
+    <div class="deliv-item">
+      <div class="deliv-icon">📊</div>
+      <div class="deliv-body">
+        <div class="deliv-title">Link rastreável com analytics</div>
+        <div class="deliv-desc">Cada vídeo tem um link único. Você sabe quantas pessoas assistiram, quando e de onde.</div>
+      </div>
+    </div>
+    <div class="deliv-item">
+      <div class="deliv-icon">📱</div>
+      <div class="deliv-body">
+        <div class="deliv-title">Compartilhamento direto</div>
+        <div class="deliv-desc">Um clique para enviar ao WhatsApp, Facebook, Telegram e outras redes. Sem download, sem edição.</div>
+      </div>
+    </div>
+  </div>
+
+  <p class="section-label">Como começar</p>
+  <div class="trial-box">
+    <div class="trial-left">
+      <div class="trial-badge">Passo 1 — Teste</div>
+      <div class="trial-price">R$&nbsp;350 <span>uma vez</span></div>
+      <p class="trial-desc">Criamos o seu avatar digital com a sua voz e geramos <strong>1 vídeo de até 1 minuto</strong>. Você vê o resultado e decide se quer continuar — sem compromisso.</p>
+    </div>
+    <div class="trial-arrow">→</div>
+    <div class="trial-right">
+      <div class="trial-badge">Passo 2 — Assinatura</div>
+      <p class="trial-desc" style="margin-top:8px">Se gostar, escolhe o plano mensal abaixo e começa a produzir os seus vídeos de campanha.</p>
+    </div>
+  </div>
+
+  <p class="section-label" style="margin-top:32px">Planos mensais</p>
+  <div class="plans">
+    <div class="plan standard">
+      <div class="plan-badge">Piloto</div>
+      <div class="plan-name">Standard</div>
+      <div class="plan-price">R$&nbsp;697<span>/mês</span></div>
+      <div class="plan-subtitle">Até 5 vídeos · 7 min/mês</div>
+      <div class="plan-divider"></div>
+      <ul class="feature-list">
+        <li>Avatar digital personalizado</li>
+        <li>Clonagem da sua voz</li>
+        <li>Roteirista com IA</li>
+        <li>Links com analytics</li>
+        <li>Compartilhamento direto</li>
+      </ul>
+    </div>
+    <div class="plan premium">
+      <div style="display:inline-block;font-size:11px;color:#e6c25a;background:rgba(230,194,90,.1);border:1px solid rgba(230,194,90,.25);border-radius:20px;padding:3px 10px;margin-bottom:10px">Teste: R$450</div>
+      <div class="plan-badge">Piloto Pro</div>
+      <div class="plan-name">Pro</div>
+      <div class="plan-price">R$&nbsp;897<span>/mês</span></div>
+      <div class="plan-subtitle">Até 5 vídeos · 7 min/mês</div>
+      <div class="plan-divider"></div>
+      <ul class="feature-list">
+        <li>Avatar digital personalizado</li>
+        <li>Clonagem da sua voz</li>
+        <li>Roteirista com IA</li>
+        <li>Links com analytics</li>
+        <li>Compartilhamento direto</li>
+        <li><strong style="color:#e6c25a">Qualidade de vídeo superior</strong> — resultado mais realista e profissional</li>
+      </ul>
+    </div>
+  </div>
+
+  <p class="section-label">Condições</p>
+  <div class="conditions">
+    <ul>
+      <li>Teste de R$350 não incluído na assinatura — sem reembolso</li>
+      <li>Ambos os planos são preços exclusivos de piloto</li>
+      <li>Cancelamento a qualquer momento — válido a partir do mês seguinte</li>
+      <li>Preço piloto garantido enquanto a assinatura estiver ativa</li>
+    </ul>
+  </div>
+
+  <p class="section-label">Evolução do plano</p>
+  <div class="roadmap">
+    <div class="roadmap-step">
+      <div class="roadmap-dot active"></div>
+      <div class="roadmap-content">
+        <div class="roadmap-title">Teste</div>
+        <div class="roadmap-desc">R$350 · 1 vídeo de 1 min · sem compromisso</div>
+      </div>
+    </div>
+    <div class="roadmap-line"></div>
+    <div class="roadmap-step">
+      <div class="roadmap-dot"></div>
+      <div class="roadmap-content">
+        <div class="roadmap-title">Piloto mensal</div>
+        <div class="roadmap-desc">R$697–897/mês · 5 vídeos · 7 min · preço exclusivo de piloto</div>
+      </div>
+    </div>
+    <div class="roadmap-line"></div>
+    <div class="roadmap-step">
+      <div class="roadmap-dot"></div>
+      <div class="roadmap-content">
+        <div class="roadmap-title">Pacote completo</div>
+        <div class="roadmap-desc">Mais vídeos por mês · minutos ampliados · condições especiais para clientes do piloto</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="cta">
+    <p>Dúvidas ou para começar:</p>
+    <a href="https://wa.me/972545803037" target="_blank" class="contact">
+      💬 Falar no WhatsApp
+    </a>
+  </div>
+
+  <div class="footer">
+    Campanha IA · campanha-one.vercel.app
+  </div>
+
+</div>
+</body>
+</html>

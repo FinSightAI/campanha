@@ -172,7 +172,7 @@ export default function PitchPage() {
           <div className="steps" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 24 }}>
             {[
               { n: "01", icon: "🎥", title: "Grave uma vez", sub: "10 min · única vez na vida", body: "Câmera doméstica, fundo limpo, boa iluminação. Você lê um texto de consentimento e fala livremente por 2–5 minutos. Só isso.", tag: "Única vez" },
-              { n: "02", icon: "🤖", title: "A IA aprende você", sub: "5–10 min · automático", body: "O D-ID V3 aprende seu rosto, voz, movimentos labiais e seu jeito de falar. Você não faz nada.", tag: "Automático" },
+              { n: "02", icon: "🤖", title: "A IA aprende você", sub: "5–10 min · automático", body: "A plataforma aprende seu rosto, voz, movimentos labiais e seu jeito de falar. Você não faz nada.", tag: "Automático" },
               { n: "03", icon: "⚡", title: "Escreva → Vídeo", sub: "60 segundos · ilimitado", body: "Escreva qualquer discurso. A IA gera o vídeo com o seu rosto falando. Compartilhe direto no WhatsApp.", tag: "Ilimitado" },
             ].map((s, i) => (
               <div key={s.n} className={`card reveal d${i+1}`} style={{ background: "rgba(255,255,255,.025)", border: "1px solid rgba(255,255,255,.07)", borderRadius: 20, padding: "36px 28px" }}>
@@ -239,7 +239,7 @@ export default function PitchPage() {
             { q: "Quanto tempo leva a configuração?", a: "10 minutos de gravação + 5–10 minutos de processamento automático. Feito isso, cada vídeo novo fica pronto em 60 segundos. A configuração é feita uma única vez." },
             { q: "Quantos vídeos posso criar?", a: "Ilimitados. Sem cobrança por vídeo, sem créditos que acabam, sem surpresas." },
             { q: "O que é o Campanha Burst?", a: "Você escreve um tema — por exemplo «transporte público» — e a IA gera 5 versões do mesmo discurso: para jovens, idosos, pais, empresários e público geral. Os 5 vídeos são criados ao mesmo tempo." },
-            { q: "Meu rosto e voz estão protegidos?", a: "Sim. O D-ID exige um termo de consentimento explícito antes de qualquer treinamento. Seu rosto e voz pertencem somente a você." },
+            { q: "Meu rosto e voz estão protegidos?", a: "Sim. A plataforma exige um termo de consentimento explícito antes de qualquer treinamento. Seu rosto e voz pertencem somente a você." },
           ].map(faq => <FAQ key={faq.q} {...faq} />)}
         </section>
 

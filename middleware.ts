@@ -7,15 +7,28 @@ function forbidden() {
   });
 }
 
-export function middleware(req: NextRequest) {
-  // The video proxy is loaded directly by <video src>, which cannot attach a
-  // custom header — allow it through (it has its own host allow-list).
-  if (req.nextUrl.pathname.startsWith("/api/proxy-video")) return NextResponse.next();
+const PUBLIC_PATHS = ["/acesso", "/proposta.html", "/guia-gravacao.html", "/pitch", "/v/", "/admin"];
 
-  // CSRF: cost-incurring mutations must originate from our own site. Browsers
-  // always send Origin on cross-site POSTs, so a forged cross-origin request
-  // is rejected; same-origin requests match the host. (Non-browser clients send
-  // no Origin and can't be used for CSRF.)
+export function middleware(req: NextRequest) {
+  const { pathname } = req.nextUrl;
+
+  // ── Password gate (app pages only) ───────────────────────────────────────
+  const accessPassword = process.env.CAMPANHA_ACCESS_PASSWORD;
+  const isPublic = PUBLIC_PATHS.some((p) => pathname.startsWith(p));
+  if (accessPassword && !pathname.startsWith("/api/") && !isPublic) {
+    const cookie = req.cookies.get("campanha_access")?.value;
+    if (cookie !== accessPassword) {
+      const url = req.nextUrl.clone();
+      url.pathname = "/acesso";
+      url.searchParams.set("next", pathname);
+      return NextResponse.redirect(url);
+    }
+  }
+
+  // ── Proxy — allow through (has its own host allow-list) ──────────────────
+  if (pathname.startsWith("/api/proxy-video")) return NextResponse.next();
+
+  // ── CSRF: cost-incurring mutations must come from our own origin ──────────
   if (["POST", "PUT", "PATCH", "DELETE"].includes(req.method)) {
     const origin = req.headers.get("origin");
     if (origin) {
@@ -27,21 +40,26 @@ export function middleware(req: NextRequest) {
     }
   }
 
-  // The @vercel/blob client upload() requests an upload token from /api/upload
-  // and cannot attach our custom gate header — skip the static-key gate here
-  // (still covered by the CSRF Origin check above + per-IP rate limiting).
-  if (req.nextUrl.pathname.startsWith("/api/upload")) return NextResponse.next();
+  // ── Blob upload + password login — skip static-key gate ─────────────────
+  if (pathname.startsWith("/api/upload") || pathname.startsWith("/api/acesso")) return NextResponse.next();
 
-  const expected = process.env.NEXT_PUBLIC_CAMPANHA_KEY;
-  if (!expected) return NextResponse.next(); // dev: skip if not set
-  const provided = req.headers.get("x-campanha-key");
-  if (provided !== expected) {
-    return new NextResponse(JSON.stringify({ error: "Forbidden" }), {
-      status: 403,
-      headers: { "Content-Type": "application/json" },
-    });
+  // ── Static API key gate (API routes only) ────────────────────────────────
+  if (pathname.startsWith("/api/")) {
+    const expected = process.env.NEXT_PUBLIC_CAMPANHA_KEY;
+    if (expected) {
+      const provided = req.headers.get("x-campanha-key");
+      if (provided !== expected) {
+        return new NextResponse(JSON.stringify({ error: "Forbidden" }), {
+          status: 403,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+    }
   }
+
   return NextResponse.next();
 }
 
-export const config = { matcher: ["/api/:path*"] };
+export const config = {
+  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
+};

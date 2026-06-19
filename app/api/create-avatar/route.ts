@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
   if (!res.ok) {
     console.error("[create-avatar]", res.status, data?.message);
     const msg = res.status === 401 || res.status === 403
-      ? "Seu plano D-ID não permite criar avatares personalizados. Faça upgrade para um plano pago (Pro ou superior)."
+      ? "Seu plano não permite criar avatares personalizados. Entre em contato com o suporte."
       : "Erro ao criar o avatar. Tente novamente.";
     return Response.json({ error: msg }, { status: res.status });
   }

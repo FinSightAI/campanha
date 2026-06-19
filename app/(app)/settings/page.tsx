@@ -104,7 +104,7 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="p-8 max-w-lg space-y-6">
+    <div className="p-8 space-y-6" style={{ maxWidth: "min(56rem, 100%)", margin: "0 auto", width: "100%" }}>
       <h1 className="text-2xl font-bold mb-1" style={{ color: "var(--text)" }}>{t("set_title")}</h1>
 
       {/* D-ID Key */}
@@ -149,7 +149,7 @@ export default function SettingsPage() {
       <div className="rounded-xl p-6" style={{ background: "var(--card)", border: "1px solid var(--border)" }}>
         <div className="flex items-start justify-between mb-1">
           <h2 className="text-base font-bold" style={{ color: "var(--text)" }}>
-            {lang === "pt" ? "Chave ElevenLabs (voz)" : lang === "en" ? "ElevenLabs key (voice)" : "מפתח ElevenLabs (קול)"}
+            {lang === "pt" ? "Chave de voz (clonagem)" : lang === "en" ? "Voice key (cloning)" : "מפתח קול (שכפול)"}
           </h2>
           <span className="text-xs px-2.5 py-1 rounded-full font-medium"
             style={{ background: hasElKey ? "var(--gold)" : "var(--border)", color: hasElKey ? "#000" : "var(--muted)" }}>
@@ -158,20 +158,20 @@ export default function SettingsPage() {
         </div>
         <p className="text-xs mb-5" style={{ color: "var(--muted)" }}>
           {lang === "pt"
-            ? "Para clonar a sua voz. A clonagem será cobrada na sua conta ElevenLabs."
+            ? "Para clonar a sua voz com mais fidelidade ao original."
             : lang === "en"
-            ? "To clone your voice. Cloning is billed to your ElevenLabs account."
-            : "לשכפול הקול שלך. השכפול יחויב על חשבון ElevenLabs שלך."}
+            ? "To clone your voice with greater fidelity."
+            : "לשכפול הקול שלך בצורה מדויקת יותר."}
         </p>
         <div className="rounded-lg p-4 mb-5" style={{ background: "var(--bg)", border: "1px solid var(--border)" }}>
           <p className="text-xs font-semibold mb-3" style={{ color: "var(--gold)" }}>
             {lang === "pt" ? "Como obter a chave:" : lang === "en" ? "How to get the key:" : "איך מקבלים מפתח:"}
           </p>
           {(lang === "pt"
-            ? ["Acesse elevenlabs.io e crie uma conta", "Clique no seu perfil → API Keys", "Copie a chave (xi-api-key)"]
+            ? ["Acesse o portal do serviço de voz fornecido pelo suporte", "Navegue até Configurações → API Keys", "Copie a chave e cole abaixo"]
             : lang === "en"
-            ? ["Go to elevenlabs.io and create an account", "Click your profile → API Keys", "Copy the key (xi-api-key)"]
-            : ["היכנס ל-elevenlabs.io וצור חשבון", "לחץ על הפרופיל → API Keys", "העתק את המפתח (xi-api-key)"]
+            ? ["Access the voice service portal provided by support", "Go to Settings → API Keys", "Copy the key and paste below"]
+            : ["כנס לפורטל שירות הקול שסיפק התמיכה", "עבור להגדרות → API Keys", "העתק את המפתח והדבק למטה"]
           ).map((step, i) => (
             <div key={i} className="flex gap-2.5 mb-2 last:mb-0">
               <span className="w-5 h-5 rounded-full text-xs flex-shrink-0 flex items-center justify-center font-bold mt-0.5"
@@ -181,7 +181,7 @@ export default function SettingsPage() {
           ))}
         </div>
         <input type="password" value={elKey} onChange={(e) => setElKey(e.target.value)}
-          placeholder="xi-api-key..."
+          placeholder="api-key..."
           className="w-full px-4 py-3 rounded-lg outline-none mb-4 font-mono"
           style={{ background: "var(--bg)", border: "1px solid var(--border)", color: "var(--text)", fontSize: 16 }} />
         <div className="flex gap-3">

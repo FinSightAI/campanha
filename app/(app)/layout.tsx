@@ -44,12 +44,16 @@ const CSS = `
     .mobile-bar { display: none !important; }
     .sidebar { transform: none !important; }
     .sidebar-close { display: none !important; }
-    /* Center page content on desktop so it isn't a narrow column stuck to the
-       left (which read as a stretched mobile layout). */
-    .app-main > div { margin-left: auto !important; margin-right: auto !important; }
-    /* Give forms/content room to breathe on wide screens. */
-    .app-main .max-w-lg { max-width: 40rem; }
-    .app-main .max-w-2xl { max-width: 48rem; }
+    /* Center page content on desktop. Use > * (not > div) because pages wrap
+       in a React Fragment which adds a <style> sibling before the content div. */
+    .app-main > * { margin-left: auto !important; margin-right: auto !important; }
+    /* Widen all max-w classes on desktop — use !important to beat Tailwind v4
+       utilities which are injected into the page after this <style> block. */
+    .app-main .max-w-lg  { max-width: 42rem !important; }
+    .app-main .max-w-xl  { max-width: 50rem !important; }
+    .app-main .max-w-2xl { max-width: 58rem !important; }
+    .app-main .max-w-3xl { max-width: 70rem !important; }
+    .app-main .max-w-4xl { max-width: 84rem !important; }
   }
 `;
 
@@ -83,7 +87,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const Sidebar = (
     <aside
       className={`sidebar w-56 flex-shrink-0 flex flex-col border-r${menuOpen ? " open" : ""}`}
-      style={{ background: "var(--card)", borderColor: "var(--border)" }}
+      style={{ background: "var(--card)", borderColor: "var(--border)", boxShadow: "var(--shadow-card)" }}
     >
       <div className="p-5 border-b flex items-center justify-between" style={{ borderColor: "var(--border)" }}>
         <Link href="/" className="text-xl font-bold" style={{ color: "var(--gold)" }}>
@@ -106,14 +110,17 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               onClick={() => setMenuOpen(false)}
               className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors"
               style={{
-                background: active ? "var(--gold)" : "transparent",
-                color: active ? "#000" : "var(--muted)",
+                background: active ? "rgba(230,194,90,.13)" : "transparent",
+                color: active ? "var(--gold)" : "var(--muted)",
+                borderLeft: `2px solid ${active ? "var(--gold)" : "transparent"}`,
+                paddingLeft: active ? "10px" : "12px",
+                fontWeight: active ? 700 : 500,
               }}
             >
               <span className="text-base">{item.icon}</span>
               <span className="flex-1">{item.label}</span>
               {item.href === "/settings" && hasOwnKey && (
-                <span className="w-1.5 h-1.5 rounded-full" style={{ background: active ? "#000" : "var(--gold)" }} />
+                <span className="w-1.5 h-1.5 rounded-full" style={{ background: "var(--gold)" }} />
               )}
             </Link>
           );
@@ -138,7 +145,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           ))}
         </div>
         <p className="text-xs" style={{ color: "var(--muted)" }}>
-          {t("nav_powered")}
+          {"Powered by Campanha IA"}
         </p>
       </div>
     </aside>

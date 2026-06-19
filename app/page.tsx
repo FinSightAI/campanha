@@ -58,7 +58,7 @@ const CONTENT: Record<string, {
     top: "Vídeos de campanha",
     gold: "em 60 segundos",
     sub: "Grave-se uma vez — e crie vídeos com o seu rosto e a sua voz para qualquer público, apenas com texto.",
-    cta: "Começar agora — grátis →",
+    cta: "Começar agora →",
     howTitle: "Como funciona",
     steps: [
       { icon: "🎬", title: "Crie seu avatar", desc: "Grave um vídeo de 1 minuto. A IA aprende seu rosto e voz. Feito uma única vez." },
@@ -74,13 +74,13 @@ const CONTENT: Record<string, {
       { icon: "🔗", title: "Links rastreáveis", desc: "Cada vídeo tem um link único com contador de visualizações" },
       { icon: "📱", title: "Mobile-ready", desc: "Funciona no celular — crie e compartilhe de onde estiver" },
     ],
-    note: "Sem cartão de crédito · Começa grátis",
+    note: "Plataforma profissional de campanha com IA · 2026",
   },
   en: {
     top: "Campaign videos",
     gold: "in 60 seconds",
     sub: "Record yourself once — then create videos with your face and voice for any audience, just with text.",
-    cta: "Get started — free →",
+    cta: "Get started →",
     howTitle: "How it works",
     steps: [
       { icon: "🎬", title: "Create your avatar", desc: "Record a 1-minute video. AI learns your face and voice. Done only once." },
@@ -96,7 +96,7 @@ const CONTENT: Record<string, {
       { icon: "🔗", title: "Tracking links", desc: "Each video gets a unique link with a view counter" },
       { icon: "📱", title: "Mobile-ready", desc: "Works on phone — create and share from anywhere" },
     ],
-    note: "No credit card · Starts free",
+    note: "Professional AI campaign platform · 2026",
   },
 };
 
