@@ -6,6 +6,7 @@ import { useLanguage } from "@/lib/LanguageContext";
 import type { Lang } from "@/lib/translations";
 import { useEffect, useState } from "react";
 import LegalNotice from "./LegalNotice";
+import ThemeToggle from "./ThemeToggle";
 
 const CSS = `
   @media (max-width: 768px) {
@@ -114,6 +115,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       </nav>
 
       <div className="p-4 border-t space-y-3" style={{ borderColor: "var(--border)" }}>
+        <ThemeToggle />
         <div className="flex gap-1">
           {LANGS.map((l) => (
             <button

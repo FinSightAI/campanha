@@ -1,34 +1,70 @@
 @import "tailwindcss";
 
-:root {
-  --bg: #09090f;
-  --card: #13131f;
-  --border: #252538;
-  --gold: #c9a84c;
-  --gold-dim: #8a6e2a;
-  --text: #f0f0f0;
-  --muted: #6b6b8a;
+/* ── Dark theme (default) ───────────────────────────────────────── */
+:root,
+[data-theme="dark"] {
+  --bg: #0b0b13;
+  --bg-grad: radial-gradient(1100px 600px at 75% -12%, rgba(230,194,90,.10), transparent 60%),
+             radial-gradient(900px 500px at 0% 0%, rgba(124,108,255,.07), transparent 55%);
+  --card: #15151f;
+  --card-2: #1c1c28;
+  --border: #2a2a3a;
+  --gold: #e6c25a;
+  --gold-dim: #9a7a2e;
+  --accent: #8b7bff;
+  --text: #f4f4f7;
+  --muted: #9a9ab2;
+  --shadow: 0 10px 34px rgba(0,0,0,.40);
+}
+
+/* ── Light theme ────────────────────────────────────────────────── */
+[data-theme="light"] {
+  --bg: #f5f6fb;
+  --bg-grad: radial-gradient(1100px 600px at 75% -12%, rgba(201,168,76,.16), transparent 60%),
+             radial-gradient(900px 500px at 0% 0%, rgba(124,108,255,.08), transparent 55%);
+  --card: #ffffff;
+  --card-2: #eef0f7;
+  --border: #e3e5ef;
+  --gold: #b07d12;
+  --gold-dim: #c9a84c;
+  --accent: #6a5cff;
+  --text: #1a1b25;
+  --muted: #6b6c80;
+  --shadow: 0 10px 30px rgba(30,32,60,.10);
 }
 
 @theme inline {
   --color-bg: var(--bg);
   --color-card: var(--card);
+  --color-card-2: var(--card-2);
   --color-border: var(--border);
   --color-gold: var(--gold);
   --color-gold-dim: var(--gold-dim);
+  --color-accent: var(--accent);
   --color-text: var(--text);
   --color-muted: var(--muted);
 }
 
 body {
   background: var(--bg);
+  background-image: var(--bg-grad);
+  background-attachment: fixed;
   color: var(--text);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   direction: ltr;
 }
 
-* {
-  box-sizing: border-box;
+* { box-sizing: border-box; }
+
+/* Smooth, contained transition when toggling theme (no hover jank) */
+body,
+aside,
+main,
+header,
+input,
+textarea,
+select {
+  transition: background-color .25s ease, color .25s ease, border-color .25s ease;
 }
 
 ::selection {
@@ -36,16 +72,10 @@ body {
   color: #fff;
 }
 
-::-webkit-scrollbar {
-  width: 6px;
-}
-::-webkit-scrollbar-track {
-  background: var(--bg);
-}
-::-webkit-scrollbar-thumb {
-  background: var(--border);
-  border-radius: 3px;
-}
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--gold-dim); }
 
 /* iOS Safari auto-zooms any focused field with font-size < 16px and never
    zooms back, breaking layout. Force 16px on mobile while keeping the
