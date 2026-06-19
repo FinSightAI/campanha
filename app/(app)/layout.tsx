@@ -44,6 +44,12 @@ const CSS = `
     .mobile-bar { display: none !important; }
     .sidebar { transform: none !important; }
     .sidebar-close { display: none !important; }
+    /* Center page content on desktop so it isn't a narrow column stuck to the
+       left (which read as a stretched mobile layout). */
+    .app-main > div { margin-left: auto !important; margin-right: auto !important; }
+    /* Give forms/content room to breathe on wide screens. */
+    .app-main .max-w-lg { max-width: 40rem; }
+    .app-main .max-w-2xl { max-width: 48rem; }
   }
 `;
 
