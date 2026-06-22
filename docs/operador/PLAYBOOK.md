@@ -33,7 +33,8 @@
 5. הוסף / עדכן:
    - `DID_API_KEY` = המפתח שלך מ-D-ID
    - `CAMPANHA_MONTHLY_VIDEO_LIMIT` = `5`
-   - `CAMPANHA_MONTHLY_SECONDS_LIMIT` = `600`
+   - `CAMPANHA_MONTHLY_SECONDS_LIMIT` = `420`
+   - `CAMPANHA_PLAN` = `standard` ← **חשוב: נועל עריכת וידאו ל-Pro**
    - `GEMINI_API_KEY` = המפתח שלך מ-Google AI Studio
    - `BLOB_READ_WRITE_TOKEN` = טוקן מ-Vercel Blob
 6. Redeploy → ממתין עד שמופיע "Aliased"
@@ -57,6 +58,7 @@
 **אם הלקוח רוצה שדרוג לPro:**
 → תוכנית Pro = R$897/חודש
 → ב-Vercel: שנה `CAMPANHA_VIDEO_PROVIDER` = `heygen` → Redeploy
+→ שנה `CAMPANHA_PLAN` = `pro` ← פותח עריכת וידאו בממשק
 → עדכן `CAMPANHA_MONTHLY_SECONDS_LIMIT` = `420` (7 דקות)
 
 ---
